@@ -1,16 +1,74 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './ResourcePage.css';
-import {
-  apiGetResources, apiCreateResource, apiUpdateResource,
-  apiDeleteResource, apiDownloadResource, apiRateResource, apiAddComment
-} from '../api/api';
 
 const FILE_TYPES     = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'video', 'image', 'link', 'other'];
 const RESOURCE_TYPES = ['lecture_notes','past_papers','assignments','tutorials','project_guides','video_tutorials','reference_materials','other'];
 const VISIBILITIES   = ['public', 'batch', 'private'];
 
 const EMPTY_FORM = { title:'', description:'', fileUrl:'', fileType:'pdf', subject:'', topic:'', tags:'', resourceType:'lecture_notes', visibility:'batch' };
+
+// Mock data for resources
+const MOCK_RESOURCES = [
+  {
+    _id: 'r1',
+    title: 'Data Structures Notes',
+    description: 'Comprehensive notes on data structures including arrays, linked lists, stacks, and queues.',
+    fileUrl: 'https://example.com/ds-notes.pdf',
+    fileType: 'pdf',
+    subject: 'Computer Science',
+    topic: 'Data Structures',
+    tags: ['data structures', 'algorithms', 'notes'],
+    resourceType: 'lecture_notes',
+    visibility: 'public',
+    uploader: { _id: 'u1', fullName: 'Alice Silva' },
+    views: 128,
+    downloads: 74,
+    rating: 4.5,
+    comments: [
+      { _id: 'c1', user: { fullName: 'Bob Perera' }, text: 'Great notes!', createdAt: new Date().toISOString() }
+    ],
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'r2',
+    title: 'Algorithms Past Paper',
+    description: 'Past examination paper for Algorithms course with solutions.',
+    fileUrl: 'https://example.com/algorithms-paper.docx',
+    fileType: 'docx',
+    subject: 'Computer Science',
+    topic: 'Algorithms',
+    tags: ['algorithms', 'past paper', 'exam'],
+    resourceType: 'past_papers',
+    visibility: 'public',
+    uploader: { _id: 'u2', fullName: 'Bob Perera' },
+    views: 220,
+    downloads: 110,
+    rating: 4.2,
+    comments: [],
+    createdAt: new Date(Date.now() - 86400000).toISOString()
+  },
+  {
+    _id: 'r3',
+    title: 'Database Design Tutorial',
+    description: 'Step-by-step tutorial on database design principles and normalization.',
+    fileUrl: 'https://example.com/db-tutorial.pdf',
+    fileType: 'pdf',
+    subject: 'Computer Science',
+    topic: 'Database Systems',
+    tags: ['database', 'design', 'normalization'],
+    resourceType: 'tutorials',
+    visibility: 'batch',
+    uploader: { _id: 'u1', fullName: 'Alice Silva' },
+    views: 95,
+    downloads: 45,
+    rating: 4.8,
+    comments: [
+      { _id: 'c2', user: { fullName: 'Charlie Admin' }, text: 'Very helpful tutorial!', createdAt: new Date().toISOString() }
+    ],
+    createdAt: new Date(Date.now() - 172800000).toISOString()
+  }
+];
 
 const ResourcePage = () => {
   const [resources, setResources]     = useState([]);
@@ -26,22 +84,45 @@ const ResourcePage = () => {
   const [filterSubject, setFilterSubject] = useState('');
   const [filterType, setFilterType]   = useState('');
   const [ratingTarget, setRatingTarget] = useState(null);
-  const [hoverStar, setHoverStar]     = useState(0);
   const [commentTarget, setCommentTarget] = useState(null);
   const [commentText, setCommentText] = useState('');
+  const [hoverStar, setHoverStar] = useState(0);
 
-  const showToast = (msg, ok = true) => { setToast({msg, ok}); setTimeout(() => setToast({msg:'',ok:true}), 3000); };
+  const showToast = (msg, ok = true) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast({ msg: '', ok: true }), 3000);
+  };
 
   const loadResources = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      const params = new URLSearchParams();
-      if (search)        params.set('search',  search);
-      if (filterSubject) params.set('subject', filterSubject);
-      if (filterType)    params.set('resourceType', filterType);
-      const q    = params.toString() ? `?${params}` : '';
-      const data = await apiGetResources(q);
-      setResources(data.resources || []);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      let filtered = [...MOCK_RESOURCES];
+      
+      // Apply search filter
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(r => 
+          r.title.toLowerCase().includes(searchLower) ||
+          r.subject.toLowerCase().includes(searchLower) ||
+          r.topic.toLowerCase().includes(searchLower) ||
+          (r.tags && r.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+        );
+      }
+      
+      // Apply subject filter
+      if (filterSubject) {
+        filtered = filtered.filter(r => r.subject === filterSubject);
+      }
+      
+      // Apply resource type filter
+      if (filterType) {
+        filtered = filtered.filter(r => r.resourceType === filterType);
+      }
+      
+      setResources(filtered);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   }, [search, filterSubject, filterType]);
@@ -73,8 +154,31 @@ const ResourcePage = () => {
     setSubmitting(true);
     try {
       const payload = { ...form, tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean) };
-      if (editTarget) { await apiUpdateResource(editTarget, payload); showToast('Resource updated ✓'); }
-      else            { await apiCreateResource(payload);              showToast('Resource uploaded ✓'); }
+      
+      if (editTarget) {
+        // Update existing resource
+        setResources(prev => prev.map(r => 
+          r._id === editTarget 
+            ? { ...r, ...payload, updatedAt: new Date().toISOString() }
+            : r
+        ));
+        showToast('Resource updated ✓');
+      } else {
+        // Create new resource
+        const newResource = {
+          ...payload,
+          _id: `r${Date.now()}`,
+          uploader: { _id: 'u1', fullName: 'Current User' }, // Mock current user
+          views: 0,
+          downloads: 0,
+          rating: 0,
+          comments: [],
+          createdAt: new Date().toISOString()
+        };
+        setResources(prev => [newResource, ...prev]);
+        showToast('Resource uploaded ✓');
+      }
+      
       setShowModal(false);
       loadResources();
     } catch (err) { showToast(err.message, false); }
@@ -83,28 +187,63 @@ const ResourcePage = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this resource?')) return;
-    try { await apiDeleteResource(id); showToast('Resource deleted'); loadResources(); }
-    catch (e) { showToast(e.message, false); }
+    try {
+      setResources(prev => prev.filter(r => r._id !== id));
+      showToast('Resource deleted');
+      loadResources();
+    } catch (e) { showToast(e.message, false); }
   };
 
   const handleDownload = async (r) => {
     try {
-      const data = await apiDownloadResource(r._id);
-      window.open(data.fileUrl, '_blank');
+      // Mock download - just open the file URL
+      window.open(r.fileUrl, '_blank');
       showToast('Download started ⬇');
+      // Update download count in mock data
+      setResources(prev => prev.map(res => 
+        res._id === r._id 
+          ? { ...res, downloads: res.downloads + 1 }
+          : res
+      ));
       loadResources();
     } catch (e) { showToast(e.message, false); }
   };
 
   const handleRate = async (id, rating) => {
-    try { await apiRateResource(id, rating); showToast(`Rated ${rating} ★`); setRatingTarget(null); loadResources(); }
-    catch (e) { showToast(e.message, false); }
+    try {
+      // Mock rating update
+      setResources(prev => prev.map(r => 
+        r._id === id 
+          ? { ...r, rating: rating }
+          : r
+      ));
+      showToast(`Rated ${rating} ★`);
+      setRatingTarget(null);
+      loadResources();
+    } catch (e) { showToast(e.message, false); }
   };
 
   const handleComment = async (id) => {
     if (!commentText.trim() || commentText.trim().length < 3) { showToast('Comment must be at least 3 characters', false); return; }
-    try { await apiAddComment(id, commentText); showToast('Comment added ✓'); setCommentTarget(null); setCommentText(''); }
-    catch (e) { showToast(e.message, false); }
+    try {
+      // Mock comment addition
+      const newComment = {
+        _id: `c${Date.now()}`,
+        user: { fullName: 'Current User' }, // Mock current user
+        text: commentText.trim(),
+        createdAt: new Date().toISOString()
+      };
+      
+      setResources(prev => prev.map(r => 
+        r._id === id 
+          ? { ...r, comments: [...(r.comments || []), newComment] }
+          : r
+      ));
+      
+      showToast('Comment added ✓');
+      setCommentTarget(null);
+      setCommentText('');
+    } catch (e) { showToast(e.message, false); }
   };
 
   const subjects = [...new Set(resources.map(r=>r.subject).filter(Boolean))];
@@ -132,7 +271,7 @@ const ResourcePage = () => {
             </div>
           </div>
           <div style={{display:'flex', gap:'0.75rem', alignItems:'center'}}>
-            <Link to="/dashboard" className="rp-page-nav-link">My Dashboard</Link>
+            <Link to="/user-dashboard" className="rp-page-nav-link">My Dashboard</Link>
             <button id="rp-upload-btn" className="rp-page-upload-btn" onClick={openCreate}>+ Upload Resource</button>
           </div>
         </div>

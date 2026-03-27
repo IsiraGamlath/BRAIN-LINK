@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './UserDashboard.css';
-import { apiGetProfile, apiGetResources, apiDeleteResource } from '../api/api';
 
 const UserDashboard = () => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
   const [profile, setProfile]     = useState(null);
   const [resources, setResources] = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -13,18 +20,50 @@ const UserDashboard = () => {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
-  useEffect(() => {
-    const token = localStorage.getItem('bl-token');
-    if (!token) { setError('Please log in to view your dashboard.'); setLoading(false); return; }
+  // Mock data
+  const MOCK_PROFILE = {
+    _id: 'u1',
+    fullName: 'Alice Silva',
+    slIIId: 'IT21012345',
+    email: 'alice@sliit.lk',
+    role: 'student',
+    joinedGroups: ['group1', 'group2'],
+    createdAt: new Date().toISOString()
+  };
 
+  const MOCK_USER_RESOURCES = [
+    {
+      _id: 'r1',
+      title: 'Data Structures Notes',
+      description: 'Comprehensive notes on data structures.',
+      fileType: 'pdf',
+      subject: 'Computer Science',
+      views: 128,
+      downloads: 74,
+      rating: 4.5,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'r3',
+      title: 'Database Design Tutorial',
+      description: 'Step-by-step tutorial on database design.',
+      fileType: 'pdf',
+      subject: 'Computer Science',
+      views: 95,
+      downloads: 45,
+      rating: 4.8,
+      createdAt: new Date(Date.now() - 172800000).toISOString()
+    }
+  ];
+
+  useEffect(() => {
     const load = async () => {
       try {
-        const [profileData, resourceData] = await Promise.all([
-          apiGetProfile(),
-          apiGetResources()
-        ]);
-        setProfile(profileData);
-        setResources((resourceData.resources || []).filter(r => r.uploader?._id === profileData._id));
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        setProfile(MOCK_PROFILE);
+        setResources(MOCK_USER_RESOURCES);
       } catch (e) {
         setError(e.message);
       } finally { setLoading(false); }
@@ -35,9 +74,8 @@ const UserDashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this resource?')) return;
     try {
-      await apiDeleteResource(id);
-      showToast('Resource deleted');
       setResources(prev => prev.filter(r => r._id !== id));
+      showToast('Resource deleted');
     } catch (e) { showToast(`Error: ${e.message}`); }
   };
 
@@ -85,6 +123,14 @@ const UserDashboard = () => {
             </div>
           </div>
           <span className={`ud-role-badge ud-role--${profile?.role}`}>{profile?.role}</span>
+          <button id="ud-logout-btn" className="admin-logout-btn" onClick={handleLogout} style={{ marginLeft: 'auto' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+          </button>
         </div>
       </header>
 
@@ -168,7 +214,7 @@ const UserDashboard = () => {
 
                 <div className="ud-quick-links">
                   <Link to="/resources" className="ud-quick-link">📁 Browse Resources</Link>
-                  <Link to="/reports" className="ud-quick-link">🛡️ Report an Issue</Link>
+                  <Link to="/resources" className="ud-quick-link">🛡️ Report an Issue</Link>
                 </div>
               </div>
             </div>

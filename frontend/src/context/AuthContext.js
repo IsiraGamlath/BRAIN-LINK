@@ -4,170 +4,86 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 
 const AuthContext = createContext(null);
 
-const BASE_URL = 'http://localhost:5000/api';
+const AUTH_KEY = 'bl-auth';
+
+const getStoredAuth = () => {
+  try {
+    return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null');
+  } catch {
+    return null;
+  }
+};
+
+const buildAuthPayload = ({ email, password, role }) => {
+  let userRole = 'student';
+  if (email === 'admin@gmail.com' && password === '123456') {
+    userRole = 'admin';
+  } else if (role === 'admin') {
+    userRole = 'admin';
+  }
+
+  return {
+    token: 'fake-jwt-token',
+    role: userRole,
+    fullName: userRole === 'admin' ? 'Admin User' : 'Student User',
+    email
+  };
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user,    setUser]    = useState(null);
-  const [loading, setLoading] = useState(true); // true on mount while we verify token
-
-  // ── Helpers ──────────────────────────────────────────────────────────────────
-  const getAccessToken  = () => localStorage.getItem('bl-access-token');
-  const getRefreshToken = () => localStorage.getItem('bl-refresh-token');
-
-  const saveTokens = (access, refresh) => {
-    localStorage.setItem('bl-access-token',  access);
-    localStorage.setItem('bl-refresh-token', refresh);
-  };
-
-  const clearTokens = () => {
-    localStorage.removeItem('bl-access-token');
-    localStorage.removeItem('bl-refresh-token');
-    localStorage.removeItem('bl-user');
-  };
-
-  // ── Refresh access token using stored refresh token ───────────────────────────
-  const refreshAccessToken = useCallback(async () => {
-    const token = getRefreshToken();
-    if (!token) return null;
-    try {
-      const res  = await fetch(`${BASE_URL}/auth/refresh`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ refreshToken: token })
-      });
-      if (!res.ok) { clearTokens(); setUser(null); return null; }
-      const data = await res.json();
-      saveTokens(data.accessToken, data.refreshToken);
-      return data.accessToken;
-    } catch {
-      clearTokens();
-      setUser(null);
-      return null;
-    }
-  }, []);
-
-  // ── Auto-fetch current user on mount ─────────────────────────────────────────
-  const fetchMe = useCallback(async (token) => {
-    try {
-      let res = await fetch(`${BASE_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      // Token expired → try refresh
-      if (res.status === 401) {
-        const newToken = await refreshAccessToken();
-        if (!newToken) { setLoading(false); return; }
-        res = await fetch(`${BASE_URL}/auth/me`, {
-          headers: { Authorization: `Bearer ${newToken}` }
-        });
-      }
-
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-        localStorage.setItem('bl-user', JSON.stringify(data.user));
-      } else {
-        clearTokens();
-        setUser(null);
-      }
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [refreshAccessToken]);
+  const [user, setUser] = useState(getStoredAuth());
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getAccessToken();
-    if (token) {
-      fetchMe(token);
-    } else {
-      setLoading(false);
-    }
-  }, [fetchMe]);
+    const timer = setTimeout(() => setLoading(false), 20);
+    return () => clearTimeout(timer);
+  }, []);
 
-  // ── Login ─────────────────────────────────────────────────────────────────────
-  const login = async (email, password) => {
-    const res  = await fetch(`${BASE_URL}/auth/login`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email, password })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
-
-    saveTokens(data.accessToken, data.refreshToken);
-    setUser(data.user);
-    localStorage.setItem('bl-user', JSON.stringify(data.user));
-    return data.user;
+  const saveAuth = (auth) => {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(auth));
+    setUser(auth);
   };
 
-  // ── Register ──────────────────────────────────────────────────────────────────
-  const register = async (payload) => {
-    const res  = await fetch(`${BASE_URL}/auth/signup`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Registration failed');
-
-    saveTokens(data.accessToken, data.refreshToken);
-    setUser(data.user);
-    localStorage.setItem('bl-user', JSON.stringify(data.user));
-    return data.user;
-  };
-
-  // ── Logout ────────────────────────────────────────────────────────────────────
-  const logout = async () => {
-    try {
-      const token = getAccessToken();
-      if (token) {
-        await fetch(`${BASE_URL}/auth/logout`, {
-          method:  'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization:  `Bearer ${token}`
-          },
-          body: JSON.stringify({ refreshToken: getRefreshToken() })
-        });
-      }
-    } catch (_) { /* ignore */ }
-    clearTokens();
+  const clearAuth = () => {
+    localStorage.removeItem(AUTH_KEY);
     setUser(null);
   };
 
-  // ── Utility ───────────────────────────────────────────────────────────────────
-  const isAdmin   = user?.role === 'admin';
-  const isStudent = !!user;
-
-  // ── Authenticated fetch (auto-refreshes if expired) ───────────────────────────
-  const authFetch = useCallback(async (url, options = {}) => {
-    let token = getAccessToken();
-    let res   = await fetch(url, {
-      ...options,
-      headers: { 'Content-Type': 'application/json', ...options.headers, Authorization: `Bearer ${token}` }
-    });
-
-    if (res.status === 401) {
-      token = await refreshAccessToken();
-      if (!token) throw new Error('Session expired. Please log in again.');
-      res = await fetch(url, {
-        ...options,
-        headers: { 'Content-Type': 'application/json', ...options.headers, Authorization: `Bearer ${token}` }
-      });
+  const login = async (email, password, role) => {
+    if (!email || !password || !role) {
+      throw new Error('Email, password, and role are required');
     }
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Request failed');
-    return data;
-  }, [refreshAccessToken]);
+    const auth = buildAuthPayload({ email, password, role });
+    saveAuth(auth);
+    return auth;
+  };
+
+  const register = async (payload) => {
+    const auth = buildAuthPayload(payload);
+    saveAuth(auth);
+    return auth;
+  };
+
+  const logout = async () => {
+    clearAuth();
+  };
+
+  const isAdmin = user?.role === 'admin';
+  const isStudent = !!user;
 
   return (
     <AuthContext.Provider value={{
-      user, loading, isAdmin, isStudent,
-      login, register, logout, authFetch,
-      refreshAccessToken, getAccessToken
+      user,
+      loading,
+      isAdmin,
+      isStudent,
+      login,
+      register,
+      logout,
+      refreshAccessToken: async () => user?.token,
+      getAccessToken: () => user?.token,
+      authFetch: async () => { throw new Error('No backend in local auth demo'); }
     }}>
       {children}
     </AuthContext.Provider>

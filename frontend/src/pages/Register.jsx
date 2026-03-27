@@ -104,7 +104,7 @@ export default function Register() {
         confirmPassword: form.confirmPassword
       });
       toast.success(`Account created! Welcome, ${user.fullName}! 🎉`);
-      navigate('/dashboard', { replace: true });
+      navigate('/user-dashboard', { replace: true });
     } catch (err) {
       setAlert({ type: 'error', text: err.message || 'Registration failed' });
     } finally {

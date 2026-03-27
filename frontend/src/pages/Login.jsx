@@ -5,30 +5,31 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast/Toast';
 import './Login.css';
 
-const EyeIcon    = ({ open }) => open ? '👁️' : '🙈';
-const LockIcon   = () => '🔒';
-const EmailIcon  = () => '✉️';
-const LoginIcon  = () => '⚡';
+const EyeIcon = ({ open }) => open ? '👁️' : '🙈';
+const LockIcon = () => '🔒';
+const EmailIcon = () => '✉️';
+const LoginIcon = () => '⚡';
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const toast      = useToast();
+  const toast = useToast();
 
   const from = location.state?.from?.pathname || null;
 
-  const [form, setForm]       = useState({ email: '', password: '' });
-  const [errors, setErrors]   = useState({});
+  const [form, setForm] = useState({ email: '', password: '', role: '' });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [alert, setAlert]     = useState(null);
+  const [alert, setAlert] = useState(null);
 
   const validate = () => {
     const e = {};
-    if (!form.email.trim())             e.email    = 'Email is required';
+    if (!form.email.trim()) e.email = 'Email is required';
     else if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Invalid email format';
-    if (!form.password)                 e.password = 'Password is required';
+    if (!form.password) e.password = 'Password is required';
+    if (!form.role) e.role = 'Please select a role';
     return e;
   };
 
@@ -48,17 +49,14 @@ export default function Login() {
     setAlert(null);
 
     try {
-      const user = await login(form.email.trim(), form.password);
+      const user = await login(form.email.trim(), form.password, form.role);
       toast.success(`Welcome back, ${user.fullName}! 🎉`);
 
-      const dest = from || (user.role === 'admin' ? '/admin-dashboard' : '/dashboard');
+      const dest = from || (user.role === 'admin' ? '/admin-dashboard' : '/user-dashboard');
       navigate(dest, { replace: true });
     } catch (err) {
-      const msg = err.message || 'Login failed';
+      const msg = err.message || 'Invalid credentials';
       setAlert({ type: 'error', text: msg });
-      if (msg.toLowerCase().includes('locked')) {
-        setAlert({ type: 'warning', text: msg, locked: true });
-      }
     } finally {
       setLoading(false);
     }
@@ -140,6 +138,27 @@ export default function Login() {
                 />
               </div>
               {errors.email && <p className="form-error">⚠ {errors.email}</p>}
+            </div>
+
+            {/* Role */}
+            <div className="form-group">
+              <label className="form-label" htmlFor="login-role">Role</label>
+              <div className="form-input-wrap">
+                <span className="form-input-icon">👤</span>
+                <select
+                  id="login-role"
+                  name="role"
+                  className={`form-input${errors.role ? ' form-input--error' : ''}`}
+                  value={form.role}
+                  onChange={handleChange}
+                  disabled={loading}
+                >
+                  <option value="">Select role</option>
+                  <option value="admin">Admin</option>
+                  <option value="student">Student</option>
+                </select>
+              </div>
+              {errors.role && <p className="form-error">⚠ {errors.role}</p>}
             </div>
 
             {/* Password */}

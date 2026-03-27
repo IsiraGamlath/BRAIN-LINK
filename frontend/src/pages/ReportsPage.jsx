@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './ReportsPage.css';
-import { apiGetReports, apiCreateReport, apiUpdateReportStatus, apiDeleteReport } from '../api/api';
 
 const STATUSES = ['', 'Pending', 'Reviewed', 'Resolved'];
 const TYPES    = ['', 'group', 'request', 'user'];
@@ -23,21 +22,17 @@ const ReportsPage = () => {
     setTimeout(() => setToast({ msg: '', ok: true }), 3000);
   };
 
-  const loadReports = async () => {
-    setLoading(true); setError('');
-    try {
-      const params = new URLSearchParams();
-      if (filterStatus) params.set('status', filterStatus);
-      if (filterType)   params.set('type',   filterType);
-      const q    = params.toString() ? `?${params.toString()}` : '';
-      const data = await apiGetReports(q);
-      setReports(data.reports || []);
-    } catch (e) {
-      setError(e.message);
-    } finally { setLoading(false); }
+  const loadReports = () => {
+    setLoading(true);
+    setError('');
+    setReports([
+      { _id: 'rep1', type: 'group', reportedBy: { fullName: 'Alice Silva' }, reason: 'Inappropriate behavior in group', status: 'Pending', createdAt: new Date().toISOString() },
+      { _id: 'rep2', type: 'request', reportedBy: { fullName: 'Bob Perera' }, reason: 'Spam request posted', status: 'Reviewed', createdAt: new Date(Date.now() - 86400000).toISOString() }
+    ]);
+    setLoading(false);
   };
 
-  useEffect(() => { loadReports(); }, [filterStatus, filterType]); // eslint-disable-line
+  useEffect(() => { loadReports(); }, []); // eslint-disable-line
 
   const validateForm = () => {
     const errs = {};
@@ -48,38 +43,35 @@ const ReportsPage = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    setSubmitting(true);
-    try {
-      await apiCreateReport(form);
-      showToast('Report submitted successfully ✓');
-      setShowForm(false);
-      setForm({ type: 'group', referenceId: '', reason: '' });
-      setFormErrors({});
-      loadReports();
-    } catch (err) {
-      showToast(err.message, false);
-    } finally { setSubmitting(false); }
+
+    setReports(prev => ([
+      ...prev,
+      { _id: `rep-${Date.now()}`, type: form.type, reportedBy: { fullName: 'Current User' }, reason: form.reason, status: 'Pending', createdAt: new Date().toISOString() }
+    ]));
+    showToast('Report submitted successfully ✓');
+    setShowForm(false);
+    setForm({ type: 'group', referenceId: '', reason: '' });
+    setFormErrors({});
   };
 
-  const handleStatusChange = async (id, status) => {
-    try {
-      await apiUpdateReportStatus(id, status);
-      showToast(`Status updated to "${status}"`);
-      loadReports();
-    } catch (e) { showToast(e.message, false); }
+  const handleStatusChange = (id, status) => {
+    setReports(prev => prev.map(r => r._id === id ? { ...r, status } : r));
+    showToast(`Status updated to "${status}"`);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this report?')) return;
-    try {
-      await apiDeleteReport(id);
-      showToast('Report deleted');
-      loadReports();
-    } catch (e) { showToast(e.message, false); }
+  const handleDelete = (id) => {
+    setReports(prev => prev.filter(r => r._id !== id));
+    showToast('Report deleted successfully');
   };
+
+  const filteredReports = reports.filter(r => {
+    const matchStatus = !filterStatus || filterStatus === '' || r.status === filterStatus;
+    const matchType   = !filterType   || filterType   === '' || r.type === filterType;
+    return matchStatus && matchType;
+  });
 
   return (
     <div className="reports-page">
@@ -230,7 +222,7 @@ const ReportsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {reports.map(r => (
+                {filteredReports.map(r => (
                   <tr key={r._id}>
                     <td>
                       <span className={`rp-badge rp-badge--type-${r.type}`}>

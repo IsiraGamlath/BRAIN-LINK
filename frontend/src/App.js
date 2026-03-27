@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './index.css';
 import './App.css';
 
@@ -90,8 +90,9 @@ function App() {
             <Route path="/reset-password"  element={<ResetPassword />} />
 
             {/* ── User-protected pages ── */}
-            <Route path="/dashboard"  element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-            <Route path="/resources"  element={<ProtectedRoute><ResourcePage /></ProtectedRoute>} />
+            <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+            <Route path="/dashboard"      element={<Navigate to="/user-dashboard" replace />} />
+            <Route path="/resources"      element={<ProtectedRoute><ResourcePage /></ProtectedRoute>} />
 
             {/* ── Admin-only pages ── */}
             <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

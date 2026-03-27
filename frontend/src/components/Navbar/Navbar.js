@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
 const Navbar = ({ darkMode, toggleDark }) => {
+  const { user, isAdmin } = useAuth();
+
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -13,11 +16,11 @@ const Navbar = ({ darkMode, toggleDark }) => {
   }, []);
 
   const navLinks = [
-    { label: 'Home',     href: '#hero' },
-    { label: 'About',    href: '#about' },
-    { label: 'Features', href: '#features' },
+    { label: 'Home',         href: '#hero' },
+    { label: 'About',        href: '#about' },
+    { label: 'Features',     href: '#features' },
     { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Benefits', href: '#benefits' },
+    { label: 'Benefits',     href: '#benefits' },
   ];
 
   const handleNavClick = (href) => {
@@ -47,7 +50,7 @@ const Navbar = ({ darkMode, toggleDark }) => {
           <span className="navbar__brand-text">BRAIN<span>LINK</span></span>
         </a>
 
-        {/* Desktop links */}
+        {/* Desktop scroll links */}
         <ul className="navbar__links">
           {navLinks.map(l => (
             <li key={l.href}>
@@ -61,10 +64,32 @@ const Navbar = ({ darkMode, toggleDark }) => {
 
         {/* Right actions */}
         <div className="navbar__actions">
-          {/* ── New Page Links ── */}
-          <Link to="/dashboard"       className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Dashboard</Link>
-          <Link to="/resources"       className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Resources</Link>
-          <Link to="/admin-dashboard" className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Admin</Link>
+          {user ? (
+            /* ── Authenticated: show dashboard links only (no Logout here) ── */
+            <>
+              <Link to="/" className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Home</Link>
+              {isAdmin ? (
+                <>
+                  <Link to="/admin-dashboard" className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Admin Dashboard</Link>
+                  <Link to="/reports"         className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Reports</Link>
+                  <Link to="/resources"       className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Resources</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/user-dashboard" className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>User Dashboard</Link>
+                  <Link to="/resources"      className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Resources</Link>
+                </>
+              )}
+            </>
+          ) : (
+            /* ── Guest: show Login & Register ── */
+            <>
+              <Link to="/login"    className="btn btn--primary" style={{ fontSize: '0.8rem' }}>Login</Link>
+              <Link to="/register" className="btn btn--outline"  style={{ fontSize: '0.8rem' }}>Register</Link>
+            </>
+          )}
+
+          {/* Dark-mode toggle */}
           <button className="navbar__theme-btn" onClick={toggleDark} aria-label="Toggle theme" title="Toggle dark mode">
             {darkMode ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -80,8 +105,8 @@ const Navbar = ({ darkMode, toggleDark }) => {
               </svg>
             )}
           </button>
-          <a href="#cta" className="btn btn--ghost" onClick={e => { e.preventDefault(); handleNavClick('#cta'); }}>Log In</a>
-          <a href="#cta" className="btn btn--primary" onClick={e => { e.preventDefault(); handleNavClick('#cta'); }}>Get Started</a>
+
+          {/* Hamburger */}
           <button className={`navbar__hamburger ${menuOpen ? 'open' : ''}`} onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
             <span/><span/><span/>
           </button>
@@ -97,8 +122,27 @@ const Navbar = ({ darkMode, toggleDark }) => {
           </a>
         ))}
         <div className="navbar__mobile-actions">
-          <a href="#cta" className="btn btn--ghost" onClick={e => { e.preventDefault(); handleNavClick('#cta'); }}>Log In</a>
-          <a href="#cta" className="btn btn--primary" onClick={e => { e.preventDefault(); handleNavClick('#cta'); }}>Get Started</a>
+          {user ? (
+            <>
+              {isAdmin ? (
+                <>
+                  <Link to="/admin-dashboard" className="btn btn--ghost" onClick={() => setMenuOpen(false)}>Admin Dashboard</Link>
+                  <Link to="/reports"         className="btn btn--ghost" onClick={() => setMenuOpen(false)}>Reports</Link>
+                  <Link to="/resources"       className="btn btn--ghost" onClick={() => setMenuOpen(false)}>Resources</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/user-dashboard" className="btn btn--ghost" onClick={() => setMenuOpen(false)}>User Dashboard</Link>
+                  <Link to="/resources"      className="btn btn--ghost" onClick={() => setMenuOpen(false)}>Resources</Link>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <Link to="/login"    className="btn btn--primary" onClick={() => setMenuOpen(false)}>Login</Link>
+              <Link to="/register" className="btn btn--outline"  onClick={() => setMenuOpen(false)}>Register</Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

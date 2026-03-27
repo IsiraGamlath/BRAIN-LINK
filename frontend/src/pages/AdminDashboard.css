@@ -79,6 +79,16 @@
   transition: all 0.2s;
 }
 .admin-nav-link:hover { background: rgba(79,110,247,0.1); }
+.admin-logout-btn {
+  display: flex; align-items: center; gap: 0.4rem;
+  color: #fca5a5; background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.25);
+  font-size: 0.85rem; font-weight: 600;
+  padding: 0.5rem 1rem; border-radius: 8px;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.admin-logout-btn:hover { background: rgba(239,68,68,0.25); }
 
 /* ── Container ── */
 .admin-container {

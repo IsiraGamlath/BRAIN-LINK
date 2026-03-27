@@ -34,13 +34,23 @@ export const ProtectedRoute = ({ children }) => {
 };
 
 // ── AdminRoute: requires admin role ──────────────────────────────────────────
+const Unauthorized = () => (
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090d18', color: '#f8fafc', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ textAlign: 'center', maxWidth: 520, padding: 24, border: '1px solid #334155', borderRadius: 12, background: '#0f172a' }}>
+      <h1 style={{ margin: 0, fontSize: 48 }}>🚫 Access Denied</h1>
+      <p style={{ margin: '16px 0 24px', color: '#94a3b8' }}>You do not have permission to see this page. Please login with an admin account.</p>
+      <a href="/" style={{ color: '#93c5fd', textDecoration: 'none', fontWeight: 600 }}>← Return to Home</a>
+    </div>
+  </div>
+);
+
 export const AdminRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
   const location                    = useLocation();
 
   if (loading)  return <LoadingSpinner />;
   if (!user)    return <Navigate to="/login" state={{ from: location }} replace />;
-  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  if (!isAdmin) return <Unauthorized />;
   return children;
 };
 
@@ -49,7 +59,7 @@ export const GuestRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) return <LoadingSpinner />;
-  if (user)    return <Navigate to={isAdmin ? '/admin-dashboard' : '/dashboard'} replace />;
+  if (user)    return <Navigate to={isAdmin ? '/admin-dashboard' : '/user-dashboard'} replace />;
   return children;
 };
 
