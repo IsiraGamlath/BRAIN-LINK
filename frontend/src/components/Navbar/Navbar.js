@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = ({ darkMode, toggleDark }) => {
@@ -60,6 +61,10 @@ const Navbar = ({ darkMode, toggleDark }) => {
 
         {/* Right actions */}
         <div className="navbar__actions">
+          {/* ── New Page Links ── */}
+          <Link to="/dashboard"       className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Dashboard</Link>
+          <Link to="/resources"       className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Resources</Link>
+          <Link to="/admin-dashboard" className="btn btn--ghost" style={{fontSize:'0.8rem'}}>Admin</Link>
           <button className="navbar__theme-btn" onClick={toggleDark} aria-label="Toggle theme" title="Toggle dark mode">
             {darkMode ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
