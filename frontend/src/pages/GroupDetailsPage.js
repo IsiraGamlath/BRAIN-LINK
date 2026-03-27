@@ -16,6 +16,9 @@ function GroupDetailsPage({ currentUser }) {
   const [actionLoading, setActionLoading] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUpdateMaxModal, setShowUpdateMaxModal] = useState(false);
+  const [newMaxMembers, setNewMaxMembers] = useState("");
   const [flashMessage, setFlashMessage] = useState({ type: "", text: "" });
 
   const setError = (text) => setFlashMessage({ type: "error", text });
@@ -111,6 +114,66 @@ function GroupDetailsPage({ currentUser }) {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!group) {
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      await axios.delete(`${API_BASE}/groups/${group._id}`, {
+        data: { currentUser },
+      });
+      setSuccess("Group deleted successfully");
+      setShowDeleteConfirm(false);
+      navigate("/project-group-hub", { replace: true });
+    } catch (error) {
+      setError(error?.response?.data?.message || "Unable to delete group.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateMaxMembers = async () => {
+    if (!group || !newMaxMembers) {
+      setError("Please enter a valid number");
+      return;
+    }
+
+    const parsedValue = Number(newMaxMembers);
+
+    if (isNaN(parsedValue)) {
+      setError("Invalid input");
+      return;
+    }
+
+    if (parsedValue <= 0) {
+      setError("Maximum members must be greater than 0");
+      return;
+    }
+
+    if (parsedValue < group.members.length) {
+      setError("Maximum members cannot be less than current members");
+      return;
+    }
+
+    try {
+      setActionLoading(true);
+      await axios.put(`${API_BASE}/groups/${group._id}/max-members`, {
+        maxMembers: parsedValue,
+        currentUser,
+      });
+      setSuccess("Maximum members updated successfully");
+      setShowUpdateMaxModal(false);
+      setNewMaxMembers("");
+      await fetchGroup();
+    } catch (error) {
+      setError(error?.response?.data?.message || "Unable to update maximum members.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="group-details-page">
@@ -187,11 +250,11 @@ function GroupDetailsPage({ currentUser }) {
 
           {relationship === "leader" && (
             <>
-              <button className="details-danger" disabled title="Delete endpoint not available in current backend routes">
-                Delete Group
-              </button>
-              <button className="details-secondary" disabled title="Update max members endpoint not available in current backend routes">
+              <button className="details-secondary" onClick={() => setShowUpdateMaxModal(true)} disabled={actionLoading}>
                 Update Maximum Members
+              </button>
+              <button className="details-danger" onClick={() => setShowDeleteConfirm(true)} disabled={actionLoading}>
+                Delete Group
               </button>
             </>
           )}
@@ -216,6 +279,84 @@ function GroupDetailsPage({ currentUser }) {
           onCancel={() => setShowLeaveModal(false)}
           onConfirm={handleLeaveGroup}
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-backdrop" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Delete Group</h2>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this group?</p>
+              <p className="modal-warning">This action cannot be undone.</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-cancel"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-danger"
+                onClick={handleDeleteGroup}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Maximum Members Modal */}
+      {showUpdateMaxModal && (
+        <div className="modal-backdrop" onClick={() => setShowUpdateMaxModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Update Maximum Members</h2>
+            </div>
+            <div className="modal-body">
+              <p className="modal-label">
+                Current Members: <strong>{group.members.length}</strong>
+              </p>
+              <label>
+                New Maximum Members:
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={newMaxMembers}
+                  onChange={(e) => setNewMaxMembers(e.target.value)}
+                  disabled={actionLoading}
+                  placeholder={`${group.members.length} or higher`}
+                />
+              </label>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-cancel"
+                onClick={() => {
+                  setShowUpdateMaxModal(false);
+                  setNewMaxMembers("");
+                }}
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-primary"
+                onClick={handleUpdateMaxMembers}
+                disabled={actionLoading}
+              >
+                {actionLoading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

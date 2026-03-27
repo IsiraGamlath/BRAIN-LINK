@@ -13,6 +13,10 @@ function MyProjectGroupPage({ currentUser }) {
   const [loading, setLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
   const [flashMessage, setFlashMessage] = useState({ type: "", text: "" });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUpdateMaxModal, setShowUpdateMaxModal] = useState(false);
+  const [newMaxMembers, setNewMaxMembers] = useState("");
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   const setError = (text) => setFlashMessage({ type: "error", text });
   const setSuccess = (text) => setFlashMessage({ type: "success", text });
@@ -114,6 +118,66 @@ function MyProjectGroupPage({ currentUser }) {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!myGroup) {
+      return;
+    }
+
+    try {
+      setUpdateLoading(true);
+      await axios.delete(`${API_BASE}/groups/${myGroup._id}`, {
+        data: { currentUser },
+      });
+      setSuccess("Group deleted successfully");
+      setShowDeleteConfirm(false);
+      navigate("/dashboard");
+    } catch (error) {
+      setError(error?.response?.data?.message || "Unable to delete group.");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  const handleUpdateMaxMembers = async () => {
+    if (!myGroup || !newMaxMembers) {
+      setError("Please enter a valid number");
+      return;
+    }
+
+    const parsedValue = Number(newMaxMembers);
+
+    if (isNaN(parsedValue)) {
+      setError("Invalid input");
+      return;
+    }
+
+    if (parsedValue <= 0) {
+      setError("Maximum members must be greater than 0");
+      return;
+    }
+
+    if (parsedValue < myGroup.members.length) {
+      setError("Maximum members cannot be less than current members");
+      return;
+    }
+
+    try {
+      setUpdateLoading(true);
+      await axios.put(`${API_BASE}/groups/${myGroup._id}/max-members`, {
+        maxMembers: parsedValue,
+        currentUser,
+      });
+      setSuccess("Maximum members updated successfully");
+      setShowUpdateMaxModal(false);
+      setNewMaxMembers("");
+      await fetchGroups();
+    } catch (error) {
+      setError(error?.response?.data?.message || "Unable to update maximum members.");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="my-group-page">
@@ -197,11 +261,11 @@ function MyProjectGroupPage({ currentUser }) {
 
             {isLeader ? (
               <>
-                <button className="my-group-secondary" disabled title="Not available in current backend endpoints">
-                  Remove Member
-                </button>
-                <button className="my-group-secondary" disabled title="Not available in current backend endpoints">
+                <button className="my-group-secondary" onClick={() => setShowUpdateMaxModal(true)}>
                   Update Maximum Members
+                </button>
+                <button className="my-group-danger" onClick={() => setShowDeleteConfirm(true)}>
+                  Delete Group
                 </button>
               </>
             ) : (
@@ -246,6 +310,84 @@ function MyProjectGroupPage({ currentUser }) {
           </section>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-backdrop" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Delete Group</h2>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete this group?</p>
+              <p className="modal-warning">This action cannot be undone.</p>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-cancel"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={updateLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-danger"
+                onClick={handleDeleteGroup}
+                disabled={updateLoading}
+              >
+                {updateLoading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Maximum Members Modal */}
+      {showUpdateMaxModal && (
+        <div className="modal-backdrop" onClick={() => setShowUpdateMaxModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Update Maximum Members</h2>
+            </div>
+            <div className="modal-body">
+              <p className="modal-label">
+                Current Members: <strong>{myGroup.members.length}</strong>
+              </p>
+              <label>
+                New Maximum Members:
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={newMaxMembers}
+                  onChange={(e) => setNewMaxMembers(e.target.value)}
+                  disabled={updateLoading}
+                  placeholder={`${myGroup.members.length} or higher`}
+                />
+              </label>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="modal-cancel"
+                onClick={() => {
+                  setShowUpdateMaxModal(false);
+                  setNewMaxMembers("");
+                }}
+                disabled={updateLoading}
+              >
+                Cancel
+              </button>
+              <button
+                className="modal-primary"
+                onClick={handleUpdateMaxMembers}
+                disabled={updateLoading}
+              >
+                {updateLoading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

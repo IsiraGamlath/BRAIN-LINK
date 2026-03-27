@@ -545,6 +545,161 @@ const leaveGroup = async (req, res) => {
   }
 };
 
+// Delete group (only leader can delete)
+const deleteGroup = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUser = resolveCurrentUser(req);
+    const requesterItNumber = currentUser.itNumber;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group ID",
+      });
+    }
+
+    if (!requesterItNumber || requesterItNumber.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Current user IT Number is required",
+      });
+    }
+
+    const group = await StudyGroup.findById(id);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Check if requester is the group leader
+    if (group.leader !== requesterItNumber.trim()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the group leader can delete the group",
+      });
+    }
+
+    // Delete the group
+    await StudyGroup.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Group deleted successfully",
+    });
+  } catch (error) {
+    console.error("DELETE GROUP ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting group",
+      error: error.message,
+    });
+  }
+};
+
+// Update maximum members (only leader can update)
+const updateMaxMembers = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { maxMembers } = req.body;
+    const currentUser = resolveCurrentUser(req);
+    const requesterItNumber = currentUser.itNumber;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid group ID",
+      });
+    }
+
+    if (!requesterItNumber || requesterItNumber.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Current user IT Number is required",
+      });
+    }
+
+    const group = await StudyGroup.findById(id);
+
+    if (!group) {
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
+    }
+
+    // Check if requester is the group leader
+    if (group.leader !== requesterItNumber.trim()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the group leader can update maximum members",
+      });
+    }
+
+    // Validate input
+    if (!maxMembers) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum members is required",
+      });
+    }
+
+    const parsedMaxMembers = Number(maxMembers);
+
+    if (isNaN(parsedMaxMembers)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid input",
+      });
+    }
+
+    if (parsedMaxMembers <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum members must be greater than 0",
+      });
+    }
+
+    if (parsedMaxMembers < 2 || parsedMaxMembers > 10) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum members must be between 2 and 10",
+      });
+    }
+
+    // Check if new maximum is less than current member count
+    if (parsedMaxMembers < group.members.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Maximum members cannot be less than current members",
+      });
+    }
+
+    // Update maxMembers
+    group.maxMembers = parsedMaxMembers;
+
+    // Update status based on new maxMembers
+    updateGroupStatus(group);
+    await group.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Maximum members updated successfully",
+      group,
+    });
+  } catch (error) {
+    console.error("UPDATE MAX MEMBERS ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error updating maximum members",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createStudyGroup,
   getRelevantGroups,
@@ -553,4 +708,6 @@ module.exports = {
   joinGroup,
   directJoinGroup,
   leaveGroup,
+  deleteGroup,
+  updateMaxMembers,
 };
