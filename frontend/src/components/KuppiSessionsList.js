@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
+import SessionCalendar from './SessionCalendar';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 const CURRENT_STUDENT = 'Isira';
@@ -13,6 +14,7 @@ function KuppiSessionsList({ onNavigate, onLogout: passedOnLogout }) {
   const [searchSubject, setSearchSubject] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [joinedSessions, setJoinedSessions] = useState(new Set());
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'calendar'
 
   const fetchSessions = useCallback(async () => {
     try {
@@ -102,6 +104,46 @@ function KuppiSessionsList({ onNavigate, onLogout: passedOnLogout }) {
       </div>
 
       <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* View Toggle Buttons */}
+        <div className="mb-6 flex gap-3">
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            className={`px-6 py-3 rounded-lg font-bold transition-all flex items-center gap-2 ${
+              viewMode === 'list'
+                ? 'bg-brand text-white shadow-lg'
+                : 'bg-white text-brand border-2 border-brand hover:bg-blue-50'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+              <path d="M3 10a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z" />
+            </svg>
+            List View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('calendar')}
+            className={`px-6 py-3 rounded-lg font-bold transition-all flex items-center gap-2 ${
+              viewMode === 'calendar'
+                ? 'bg-brand text-white shadow-lg'
+                : 'bg-white text-brand border-2 border-brand hover:bg-blue-50'
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5H4v8a2 2 0 002 2h12a2 2 0 002-2V7h-2v1a1 1 0 11-2 0V7H9v1a1 1 0 11-2 0V7H6v1a1 1 0 11-2 0V7z"
+                clipRule="evenodd"
+              />
+            </svg>
+            Calendar View
+          </button>
+        </div>
+
+        {/* List View */}
+        {viewMode === 'list' && (
+          <>
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
             <label className="label block mb-2">Search by Subject</label>
@@ -252,6 +294,19 @@ function KuppiSessionsList({ onNavigate, onLogout: passedOnLogout }) {
             );
           })}
         </div>
+          </>
+        )}
+
+        {/* Calendar View */}
+        {viewMode === 'calendar' && !loading && (
+          <SessionCalendar sessions={sessions} />
+        )}
+
+        {viewMode === 'calendar' && loading && (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">Loading calendar...</p>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -39,6 +39,12 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Get current time in HH:MM format
+  const getCurrentTime = () => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     await onSubmit(formData);
@@ -73,11 +79,13 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
             onChange={handleChange}
             required
           />
+          <p className="text-xs text-gray-500 mt-1">Select today or a future date</p>
         </div>
         <div>
           <label className="label block mb-2">Start Time</label>
           <input
             type="time"
+            min={formData.date === today ? getCurrentTime() : undefined}
             className="input-field"
             name="startTime"
             value={formData.startTime}

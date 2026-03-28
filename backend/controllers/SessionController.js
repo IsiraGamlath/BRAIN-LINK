@@ -24,8 +24,12 @@ const validateSessionData = (data, isUpdate = false) => {
     if (!isUpdate || Object.prototype.hasOwnProperty.call(data, 'date')) {
         if (!data.date || !isValidDate(data.date)) {
             errors.push('date must be a valid future date');
-        } else if (new Date(data.date) <= new Date()) {
-            errors.push('date must be a valid future date');
+        } else {
+            // Check if session datetime (date + startTime) is in the future
+            const sessionDateTime = getSessionDateTime(data.date, data.startTime);
+            if (sessionDateTime <= new Date()) {
+                errors.push('session must be scheduled for a future date and time');
+            }
         }
     }
 
@@ -82,8 +86,16 @@ const getAll = async (req, res) => {
 // Get upcoming sessions
 const getUpcoming = async (req, res) => {
     try {
-        const sessions = await Session.find({ date: { $gte: new Date() } });
-        res.status(200).json(sessions);
+        const allSessions = await Session.find();
+        const now = new Date();
+        
+        // Filter based on session datetime (date + startTime), not just date
+        const upcomingSessions = allSessions.filter(session => {
+            const sessionDateTime = getSessionDateTime(session.date, session.startTime);
+            return sessionDateTime > now;
+        });
+        
+        res.status(200).json(upcomingSessions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching upcoming sessions', error: error.message });
     }
@@ -92,8 +104,16 @@ const getUpcoming = async (req, res) => {
 // Get past sessions
 const getPast = async (req, res) => {
     try {
-        const sessions = await Session.find({ date: { $lt: new Date() } });
-        res.status(200).json(sessions);
+        const allSessions = await Session.find();
+        const now = new Date();
+        
+        // Filter based on session datetime (date + startTime), not just date
+        const pastSessions = allSessions.filter(session => {
+            const sessionDateTime = getSessionDateTime(session.date, session.startTime);
+            return sessionDateTime <= now;
+        });
+        
+        res.status(200).json(pastSessions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching past sessions', error: error.message });
     }
