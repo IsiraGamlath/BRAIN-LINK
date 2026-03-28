@@ -27,6 +27,26 @@ const saveStudentProfile = async (req, res) => {
       });
     }
 
+    // Batch validation: exactly 3 digits, no letters, positive numbers
+    const batchStr = String(batch).trim();
+    
+    // Check if exactly 3 digits
+    if (!/^\d{3}$/.test(batchStr)) {
+      return res.status(400).json({
+        success: false,
+        message: "Batch must be exactly 3 digits",
+      });
+    }
+
+    // Check if it's a positive number (reject "000")
+    const batchNum = parseInt(batchStr, 10);
+    if (batchNum === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Batch must be a positive number (cannot be 000)",
+      });
+    }
+
     if (!semester || String(semester).trim() === "") {
       return res.status(400).json({
         success: false,

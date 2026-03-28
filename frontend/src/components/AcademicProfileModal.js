@@ -40,6 +40,19 @@ const AcademicProfileModal = ({
 
     if (!formData.batch || formData.batch.trim() === "") {
       newErrors.batch = "Batch is required";
+    } else {
+      const batchStr = formData.batch.trim();
+
+      // Check if exactly 3 digits
+      if (!/^\d{3}$/.test(batchStr)) {
+        newErrors.batch = "Batch must be exactly 3 digits";
+      } else {
+        // Check if it's a positive number (reject "000")
+        const batchNum = parseInt(batchStr, 10);
+        if (batchNum === 0) {
+          newErrors.batch = "Batch must be a positive number (cannot be 000)";
+        }
+      }
     }
 
     if (!formData.semester || formData.semester.trim() === "") {
