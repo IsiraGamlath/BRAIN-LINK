@@ -55,11 +55,10 @@ const FilterBar = ({ onFilterChange, onClearFilters }) => {
             className="filterbar-input filterbar-select"
           >
             <option value="All Modules">All Modules</option>
-            <option value="Data Structures">Data Structures</option>
-            <option value="Database Systems">Database Systems</option>
-            <option value="Object Oriented Programming">Object Oriented Programming</option>
-            <option value="Software Engineering">Software Engineering</option>
-            <option value="Networking">Networking</option>
+            <option value="ITPM">ITPM</option>
+            <option value="NDM">NDM</option>
+            <option value="DSA">DSA</option>
+            <option value="ESD">ESD</option>
           </select>
         </div>
 

@@ -8,11 +8,10 @@ import { isProfileComplete } from "../utils/profileHelpers";
 const API_BASE = "http://localhost:5000/api";
 
 const MODULE_OPTIONS = [
-  "Data Structures",
-  "Database Systems",
-  "Object Oriented Programming",
-  "Software Engineering",
-  "Networking",
+  "ITPM",
+  "NDM",
+  "DSA",
+  "ESD",
 ];
 
 function CreateProjectGroupPage({ currentUser }) {

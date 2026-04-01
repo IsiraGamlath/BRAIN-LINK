@@ -107,11 +107,10 @@ const CreateGroupForm = ({ currentUser, onGroupCreated, onCancel, loading = fals
               }`}
             >
               <option value="">Select Module</option>
-              <option value="Data Structures">Data Structures</option>
-              <option value="Database Systems">Database Systems</option>
-              <option value="Object Oriented Programming">Object Oriented Programming</option>
-              <option value="Software Engineering">Software Engineering</option>
-              <option value="Networking">Networking</option>
+              <option value="ITPM">ITPM</option>
+              <option value="NDM">NDM</option>
+              <option value="DSA">DSA</option>
+              <option value="ESD">ESD</option>
             </select>
             {errors.moduleName && touched.moduleName && (
               <div className="create-group-error-text">{errors.moduleName}</div>
