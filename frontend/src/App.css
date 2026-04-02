@@ -1,3 +1,7 @@
+/* =================== */
+/* HEAD / Isira_Kuppi_Session styles */
+/* =================== */
+
 :root {
   --brand: #232C63;
   --brand-light: #3d4a99;
@@ -68,6 +72,7 @@
   color: var(--accent-blue);
 }
 
+/* Dashboard Main Layout */
 .dashboard-main {
   max-width: 1080px;
   margin: 0 auto;
@@ -93,6 +98,7 @@
   color: var(--text-muted);
 }
 
+/* Buttons & Alerts */
 .btn {
   border: none;
   border-radius: 10px;
@@ -153,6 +159,7 @@
   border: 1px solid #fecaca;
 }
 
+/* Session Forms & Cards */
 .session-form {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -166,9 +173,6 @@
 
 .session-form h2 {
   margin: 0 0 0.3rem;
-}
-
-.session-form h2 {
   color: var(--brand);
 }
 
@@ -297,6 +301,7 @@
   color: var(--text-muted);
 }
 
+/* Responsive for session forms */
 @media (max-width: 900px) {
   .session-sections {
     grid-template-columns: 1fr;
@@ -317,5 +322,74 @@
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =================== */
+/* Kaushini_Study_Group styles */
+/* =================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Verdana, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f0f4f9;
+}
+
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f0f4f9;
+}
+
+/* Scrollbar Styling */
+.content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Responsive for Kaushini layout */
+@media (max-width: 768px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  .content {
+    min-height: 0;
   }
 }

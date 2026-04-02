@@ -1,0 +1,190 @@
+.leave-confirmation-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.leave-confirmation-modal {
+  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+  border-radius: 18px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  width: 100%;
+  max-width: 480px;
+  padding: 44px 40px;
+  text-align: center;
+  animation: slideUp 0.3s ease;
+  border: 1px solid #e5eaf2;
+}
+
+.leave-confirmation-modal-icon {
+  margin-bottom: 20px;
+}
+
+.leave-confirmation-warning-icon {
+  font-size: 56px;
+  display: inline-block;
+  opacity: 0.95;
+}
+
+.leave-confirmation-modal-title {
+  font-size: 26px;
+  font-weight: 950;
+  color: #0f172a;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.4px;
+}
+
+.leave-confirmation-modal-message {
+  font-size: 15px;
+  color: #475569;
+  margin: 0 0 20px 0;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+.leave-confirmation-modal-group-name {
+  font-size: 14px;
+  color: #0f172a;
+  margin: 0 0 20px 0;
+  padding: 16px;
+  background: linear-gradient(135deg, #f1f5ff 0%, #f5f8ff 100%);
+  border-radius: 10px;
+  border-left: 4px solid #4f46e5;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.leave-confirmation-modal-group-name strong {
+  font-weight: 950;
+  color: #4f46e5;
+}
+
+.leave-confirmation-modal-warning {
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 700;
+  margin: 0 0 28px 0;
+  line-height: 1.6;
+  padding: 12px;
+  background-color: #fff5f5;
+  border-radius: 8px;
+  border: 1px solid #fca5a5;
+  letter-spacing: 0.2px;
+}
+
+.leave-confirmation-modal-footer {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+
+.leave-confirmation-btn-cancel {
+  padding: 12px 28px;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1.5px solid #e5eaf2;
+  border-radius: 10px;
+  background-color: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 130px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.leave-confirmation-btn-cancel:hover {
+  background-color: #f1f5ff;
+  border-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.leave-confirmation-btn-cancel:active {
+  transform: scale(0.98);
+}
+
+.leave-confirmation-btn-confirm {
+  padding: 12px 28px;
+  font-size: 13px;
+  font-weight: 800;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.25);
+  min-width: 130px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.leave-confirmation-btn-confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(220, 38, 38, 0.35);
+}
+
+.leave-confirmation-btn-confirm:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 480px) {
+  .leave-confirmation-modal {
+    max-width: 100%;
+    padding: 36px 28px;
+    border-radius: 16px;
+  }
+
+  .leave-confirmation-modal-title {
+    font-size: 22px;
+  }
+
+  .leave-confirmation-modal-message {
+    font-size: 14px;
+  }
+
+  .leave-confirmation-warning-icon {
+    font-size: 48px;
+  }
+
+  .leave-confirmation-modal-footer {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .leave-confirmation-btn-cancel,
+  .leave-confirmation-btn-confirm {
+    width: 100%;
+    min-width: auto;
+  }
+}

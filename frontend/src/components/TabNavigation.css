@@ -1,0 +1,127 @@
+.tab-navigation {
+  background: white;
+  border-bottom: 2px solid #e2e8f0;
+  margin: 16px 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tabs-container {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.tabs-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.tabs-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  position: relative;
+  margin-bottom: -2px;
+}
+
+.tab-button:hover {
+  color: #4f46e5;
+  background-color: rgba(79, 70, 229, 0.04);
+}
+
+.tab-button.tab-active {
+  color: #4f46e5;
+  border-bottom-color: #4f46e5;
+  font-weight: 600;
+}
+
+.tab-button.tab-active .tab-icon {
+  transform: scale(1.1);
+}
+
+.tab-icon {
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+
+.tab-label {
+  display: inline;
+}
+
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.tab-button.tab-active .tab-badge {
+  background: #ef4444;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 768px) {
+  .tabs-container {
+    padding: 0 12px;
+    gap: 4px;
+  }
+
+  .tab-button {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .tab-label {
+    display: none;
+  }
+
+  .tab-button.tab-active .tab-label {
+    display: inline;
+  }
+}

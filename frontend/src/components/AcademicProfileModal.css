@@ -1,0 +1,226 @@
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.profile-modal-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.profile-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.profile-modal-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.profile-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.profile-modal-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.profile-modal-body {
+  padding: 28px 24px;
+}
+
+.profile-form-group {
+  margin-bottom: 20px;
+}
+
+.profile-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.profile-form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.profile-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: #f8fbff;
+}
+
+.profile-form-input:disabled {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.profile-input-readonly {
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.profile-input-error {
+  border-color: #ef4444 !important;
+  background: #fff1f2;
+}
+
+.profile-error-text {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #991b1b;
+  font-weight: 500;
+}
+
+.profile-modal-error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #9f1239;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-modal-error-banner span {
+  font-size: 16px;
+}
+
+.profile-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.profile-btn-primary,
+.profile-btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.profile-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+.profile-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.profile-btn-disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+.profile-btn-secondary {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.profile-btn-secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.profile-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .profile-modal-container {
+    width: 95%;
+    border-radius: 12px;
+  }
+
+  .profile-modal-header {
+    padding: 20px 16px;
+  }
+
+  .profile-modal-body {
+    padding: 20px 16px;
+  }
+
+  .profile-modal-title {
+    font-size: 18px;
+  }
+
+  .profile-form-group {
+    margin-bottom: 16px;
+  }
+
+  .profile-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .profile-btn-primary,
+  .profile-btn-secondary {
+    width: 100%;
+  }
+}
