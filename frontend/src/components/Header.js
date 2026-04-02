@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 import "./Header.css";
 import NotificationPanel from "./NotificationPanel";
 
@@ -25,6 +26,21 @@ function Header({ user, onEditProfile, notifications, onMarkAsRead }) {
         <div className="logo">🧠 BrainLink</div>
         <div className="subtitle">Faculty of Computing</div>
       </div>
+
+      <nav className="global-nav" aria-label="Main navigation">
+        <NavLink
+          to="/project-group-hub"
+          className={({ isActive }) => `global-nav-link ${isActive ? "global-nav-link-active" : ""}`}
+        >
+          Project Group
+        </NavLink>
+        <NavLink
+          to="/kuppi/my-sessions"
+          className={({ isActive }) => `global-nav-link ${isActive ? "global-nav-link-active" : ""}`}
+        >
+          Kuppi Session
+        </NavLink>
+      </nav>
 
       <div className="header-right">
         <div className="profile-section">

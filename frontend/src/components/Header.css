@@ -8,6 +8,34 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+.global-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 18px;
+}
+
+.global-nav-link {
+  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+
+.global-nav-link:hover {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.global-nav-link-active {
+  background: #dbeafe;
+  color: #1d4ed8;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+}
+
 .header-left {
   display: flex;
   align-items: center;
@@ -164,6 +192,14 @@
   .header {
     padding: 12px 16px;
     flex-wrap: wrap;
+  }
+
+  .global-nav {
+    order: 3;
+    width: 100%;
+    margin: 8px 0 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
 
   .subtitle {

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import Navbar from './Navbar';
 import SessionCard from './SessionCard';
 import SessionForm from './SessionForm';
 import {
@@ -11,7 +10,7 @@ import {
   updateSession
 } from '../api/sessionApi';
 
-function Dashboard({ onNavigate, onLogout: passedOnLogout }) {
+function Dashboard() {
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [pastSessions, setPastSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -93,14 +92,8 @@ function Dashboard({ onNavigate, onLogout: passedOnLogout }) {
     }
   };
 
-  const handleLogout = () => {
-    if (passedOnLogout) passedOnLogout();
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Navbar currentPage="dashboard" onNavigate={onNavigate} onLogout={handleLogout} />
-
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-full">
       <main className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex justify-between items-start gap-4 mb-6">
           <div>

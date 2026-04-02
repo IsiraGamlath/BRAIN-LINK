@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import Navbar from './Navbar';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 const CURRENT_STUDENT = 'Isira';
 
-function KuppiSessionsList({ onNavigate, onLogout: passedOnLogout }) {
+function KuppiSessionsList() {
   const [sessions, setSessionsList] = useState([]);
   const [filteredSessions, setFilteredSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,14 +84,8 @@ function KuppiSessionsList({ onNavigate, onLogout: passedOnLogout }) {
     return timeString || '-';
   };
 
-  const handleLogout = () => {
-    if (passedOnLogout) passedOnLogout();
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <Navbar currentPage="sessions" onNavigate={onNavigate} onLogout={handleLogout} />
-
+    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-full">
       <div className="bg-gradient-to-r from-brand to-brand-light text-white py-8 px-4 shadow-xl">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-2">Kuppi Sessions</h1>
