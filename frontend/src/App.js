@@ -1,5 +1,5 @@
 // Combined App.js
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 
@@ -10,6 +10,7 @@ import KuppiSessionsList from './components/KuppiSessionsList';
 // Kaushini_Study_Group components
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
+import KuppiSidebar from "./components/KuppiSidebar";
 import StudyGroupDashboard from "./pages/StudyGroupDashboard";
 import CreateProjectGroupPage from "./pages/CreateProjectGroupPage";
 import MyProjectGroupPage from "./pages/MyProjectGroupPage";
@@ -17,27 +18,8 @@ import GroupDetailsPage from "./pages/GroupDetailsPage";
 import AcademicProfileModal from "./components/AcademicProfileModal";
 import { useCurrentUser } from "./context/CurrentUserContext";
 
-// Local storage key for session page
-const CURRENT_PAGE_KEY = 'brainlink-current-page';
-
 function App() {
-  // --- Isira_Kuppi_Session state ---
-  const [currentPage, setCurrentPage] = useState(() => {
-    return localStorage.getItem(CURRENT_PAGE_KEY) || 'dashboard';
-  });
-
-  const handleNavigate = (page) => {
-    setCurrentPage(page);
-    localStorage.setItem(CURRENT_PAGE_KEY, page);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.setItem(CURRENT_PAGE_KEY, 'dashboard');
-    setCurrentPage('dashboard');
-  };
-
-  // --- Kaushini_Study_Group state ---
+  // --- Shared state ---
   const { currentUser } = useCurrentUser();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -62,27 +44,88 @@ function App() {
         onMarkAsRead={handleMarkAsRead}
       />
 
-      <div className="main-container">
-        <Sidebar />
+      <div className="app-body">
+        <Routes>
+          <Route path="/" element={<Navigate to="/project-group-hub" replace />} />
 
-        <div className="content">
-          {/* Isira_Kuppi_Session pages */}
-          {currentPage === 'dashboard' && <Dashboard onNavigate={handleNavigate} onLogout={handleLogout} />}
-          {currentPage === 'sessions' && <KuppiSessionsList onNavigate={handleNavigate} onLogout={handleLogout} />}
+          <Route
+            path="/project-group-hub"
+            element={
+              <div className="main-container">
+                <Sidebar />
+                <div className="content">
+                  <StudyGroupDashboard
+                    currentUser={currentUser}
+                    onAddNotification={handleAddNotification}
+                    onSetNotifications={handleSetNotifications}
+                  />
+                </div>
+              </div>
+            }
+          />
 
-          {/* Kaushini_Study_Group pages via routes */}
-          <Routes>
-            <Route path="/" element={<Navigate to="/project-group-hub" replace />} />
-            <Route
-              path="/project-group-hub"
-              element={<StudyGroupDashboard currentUser={currentUser} onAddNotification={handleAddNotification} onSetNotifications={handleSetNotifications} />}
-            />
-            <Route path="/create-project-group" element={<CreateProjectGroupPage currentUser={currentUser} />} />
-            <Route path="/my-project-group" element={<MyProjectGroupPage currentUser={currentUser} />} />
-            <Route path="/group-details/:id" element={<GroupDetailsPage currentUser={currentUser} />} />
-            <Route path="*" element={<Navigate to="/project-group-hub" replace />} />
-          </Routes>
-        </div>
+          <Route
+            path="/create-project-group"
+            element={
+              <div className="main-container">
+                <Sidebar />
+                <div className="content">
+                  <CreateProjectGroupPage currentUser={currentUser} />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/my-project-group"
+            element={
+              <div className="main-container">
+                <Sidebar />
+                <div className="content">
+                  <MyProjectGroupPage currentUser={currentUser} />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/group-details/:id"
+            element={
+              <div className="main-container">
+                <Sidebar />
+                <div className="content">
+                  <GroupDetailsPage currentUser={currentUser} />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/kuppi/my-sessions"
+            element={
+              <div className="main-container">
+                <KuppiSidebar />
+                <div className="content">
+                  <Dashboard />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/kuppi/browse-sessions"
+            element={
+              <div className="main-container">
+                <KuppiSidebar />
+                <div className="content">
+                  <KuppiSessionsList />
+                </div>
+              </div>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/project-group-hub" replace />} />
+        </Routes>
       </div>
 
       {/* Kaushini: Academic Profile Modal */}
