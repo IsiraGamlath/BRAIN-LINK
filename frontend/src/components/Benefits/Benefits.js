@@ -21,16 +21,16 @@ const benefits = [
     color: '#0891B2', bg: '#E0F7FA',
   },
   {
+    icon: '📂',
+    title: 'Centralized Resource Sharing',
+    desc: 'Stop hunting for notes in WhatsApp groups. All subject resources — PDFs, videos, past papers — in one searchable library.',
+    color: '#F59E0B', bg: '#FFFBEB',
+  },
+  {
     icon: '🤝',
     title: 'Strong Peer Learning Culture',
     desc: 'Build a habit of helping and being helped. Peer ratings and recognition reward those who contribute most.',
     color: '#059669', bg: '#ECFDF5',
-  },
-  {
-    icon: '📊',
-    title: 'Data-Driven Progress Tracking',
-    desc: 'Your personal dashboard shows sessions attended, requests resolved, and contribution metrics at a glance.',
-    color: '#F59E0B', bg: '#FFFBEB',
   },
   {
     icon: '🛡️',

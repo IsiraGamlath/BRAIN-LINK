@@ -23,8 +23,8 @@ const steps = [
         <circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/>
       </svg>
     ),
-    title: 'Join or Create Groups & Sessions',
-    desc: 'Explore available Kuppi sessions and study groups. Join instantly or start your own — set the topic, time, mode, and invite your batchmates.',
+    title: 'Join Groups, Sessions & Resources',
+    desc: 'Explore Kuppi sessions, study groups, and shared resources. Join instantly or create your own — upload notes, start a session, or post a help request.',
     color: '#7C3AED',
     bg: '#F5F0FF',
   },

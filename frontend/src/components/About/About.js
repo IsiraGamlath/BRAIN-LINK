@@ -11,8 +11,7 @@ const highlights = [
     ),
     title: 'Centralized Academic Collaboration',
     desc: 'One platform for all your academic collaboration needs — study sessions, group projects, and peer support.',
-    color: '#4F6EF7',
-    bg: '#EEF1FE',
+    color: '#4F6EF7', bg: '#EEF1FE',
   },
   {
     icon: (
@@ -22,8 +21,7 @@ const highlights = [
     ),
     title: 'Structured Alternative to WhatsApp',
     desc: 'Ditch the chaos of group chats. BRAIN LINK gives your academic communication proper structure, roles, and tracking.',
-    color: '#7C3AED',
-    bg: '#F5F0FF',
+    color: '#7C3AED', bg: '#F5F0FF',
   },
   {
     icon: (
@@ -33,8 +31,19 @@ const highlights = [
     ),
     title: 'Peer-to-Peer Learning Ecosystem',
     desc: 'Learn from each other. Post help requests, respond to peers, host Kuppi sessions — build a real academic community.',
-    color: '#059669',
-    bg: '#ECFDF5',
+    color: '#059669', bg: '#ECFDF5',
+  },
+  {
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+    ),
+    title: 'Shared Study Resources',
+    desc: 'Upload and download PDFs, notes, past papers, and videos. Find subject-specific resources rated and reviewed by peers.',
+    color: '#F59E0B', bg: '#FFFBEB',
   },
 ];
 
@@ -43,7 +52,7 @@ const About = () => {
     <section className="about" id="about">
       <div className="about__inner">
         {/* Left side */}
-        <div className="about__text" data-aos="fade-right">
+        <div className="about__text">
           <div className="section-tag">About the Platform</div>
           <h2 className="section-title">
             The Smart Academic<br />
@@ -51,8 +60,8 @@ const About = () => {
           </h2>
           <p className="about__desc">
             BRAIN LINK is a centralized digital platform designed specifically for SLIIT students.
-            It brings together study group formation, peer-led learning sessions (Kuppi), and
-            academic help requests — all under one roof with smart moderation and analytics.
+            It replaces scattered WhatsApp groups with a structured ecosystem for study group
+            formation, peer-led learning (Kuppi), academic help requests, and resource sharing.
           </p>
           <p className="about__desc">
             Built by students, for students — to make collaborative learning organized,
@@ -73,7 +82,7 @@ const About = () => {
         </div>
 
         {/* Right side — highlight cards */}
-        <div className="about__cards" data-aos="fade-left">
+        <div className="about__cards">
           {highlights.map((h, i) => (
             <div className="about__card" key={i} style={{'--card-color': h.color, '--card-bg': h.bg}}>
               <div className="about__card-icon">

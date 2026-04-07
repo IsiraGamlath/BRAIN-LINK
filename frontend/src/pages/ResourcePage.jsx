@@ -168,7 +168,7 @@ const ResourcePage = () => {
         const newResource = {
           ...payload,
           _id: `r${Date.now()}`,
-          uploader: { _id: 'u1', fullName: 'Current User' }, // Mock current user
+          uploader: { _id: 'u1', fullName: 'Current User' }, 
           views: 0,
           downloads: 0,
           rating: 0,

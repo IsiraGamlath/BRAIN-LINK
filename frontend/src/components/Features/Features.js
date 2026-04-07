@@ -23,7 +23,7 @@ const features = [
         {[
           { time:'Today 3:00 PM', title:'DSA — Sorting Algorithms', dot:'#4F6EF7', n:12 },
           { time:'Tomorrow 9:00 AM', title:'OS — Memory Management', dot:'#7C3AED', n:8 },
-          { time:'Fri 2:00 PM', title:'DBMS — SQL Joins',dot:'#059669', n:15 },
+          { time:'Fri 2:00 PM', title:'DBMS — SQL Joins', dot:'#059669', n:15 },
         ].map((s, i) => (
           <div className="fp-item" key={i}>
             <div className="fp-dot" style={{background:s.dot}}/>
@@ -101,6 +101,39 @@ const features = [
     ),
   },
   {
+    id: 'resources',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+    ),
+    color: '#F59E0B', bg: '#FFFBEB', tag: 'Share & Learn',
+    title: 'Resource & Material Management',
+    desc: 'Upload and download PDFs, documents, and videos. Search by subject, filter by type, rate resources, and build a shared academic library for SLIIT students.',
+    bullets: ['Upload PDFs, docs & video links', 'Subject-based categorization', 'Search, filter & download', 'Ratings, comments & quality badges'],
+    preview: (
+      <div className="feat__preview feat__preview--amber">
+        <div className="fp-row fp-row--header"><span>📚</span><span>Shared Resources</span></div>
+        {[
+          { icon:'📄', title:'DSA Final Notes', sub:'PDF · 2.3 MB · ⭐ 4.8', badge:'Popular' },
+          { icon:'📹', title:'SQL Tutorial Video', sub:'Link · CS Module · ⭐ 4.6', badge:'New' },
+          { icon:'📋', title:'OS Past Papers', sub:'PDF · 1.1 MB · ⭐ 4.9', badge:'Top' },
+        ].map((r, i) => (
+          <div className="fp-item" key={i}>
+            <div className="fp-res-icon">{r.icon}</div>
+            <div className="fp-info">
+              <div className="fp-title">{r.title}</div>
+              <div className="fp-sub">{r.sub}</div>
+            </div>
+            <div className="fp-badge fp-badge--amber">{r.badge}</div>
+          </div>
+        ))}
+      </div>
+    ),
+  },
+  {
     id: 'admin',
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -109,19 +142,20 @@ const features = [
         <polyline points="7 9 10 12 13 9"/>
       </svg>
     ),
-    color: '#F59E0B', bg: '#FFFBEB', tag: 'Manage & Monitor',
+    color: '#EC4899', bg: '#FDF2F8', tag: 'Manage & Monitor',
     title: 'Smart Dashboard & Admin Control',
     desc: 'Students get a personalized activity dashboard. Admins get a full analytics panel with reports, moderation tools, and system health monitoring.',
     bullets: ['Personal student activity dashboard', 'Admin analytics & reporting panel', 'Content moderation & flagging', 'System usage insights'],
     preview: (
-      <div className="feat__preview feat__preview--amber">
+      <div className="feat__preview feat__preview--pink">
         <div className="fp-row fp-row--header"><span>📊</span><span>Admin Overview</span></div>
         <div className="fp-bar-chart">
           {[
             {lbl:'Sessions',val:85,color:'#4F6EF7'},
             {lbl:'Help Req.',val:62,color:'#7C3AED'},
             {lbl:'Groups',val:91,color:'#059669'},
-            {lbl:'Active',val:78,color:'#F59E0B'},
+            {lbl:'Resources',val:74,color:'#F59E0B'},
+            {lbl:'Active',val:78,color:'#EC4899'},
           ].map((b,i) => (
             <div className="fp-bar-item" key={i}>
               <div className="fp-bar-wrap">
@@ -150,7 +184,7 @@ const Features = () => {
         <div className="section-header">
           <div className="section-tag">Core Modules</div>
           <h2 className="section-title">Everything You Need to<br/><span className="grad-text">Collaborate & Learn</span></h2>
-          <p className="section-sub">Four powerful modules designed specifically for SLIIT students — integrated, intelligent, and easy to use.</p>
+          <p className="section-sub">Five powerful modules designed specifically for SLIIT students — integrated, intelligent, and easy to use.</p>
         </div>
 
         <div className="features__grid">
@@ -162,7 +196,6 @@ const Features = () => {
               onMouseEnter={() => setActive(i)}
               onMouseLeave={() => setActive(null)}
             >
-              {/* Card header */}
               <div className="feat-card__header">
                 <div className="feat-card__icon">{f.icon}</div>
                 <div className="feat-card__tag">{f.tag}</div>
@@ -170,7 +203,6 @@ const Features = () => {
               <h3 className="feat-card__title">{f.title}</h3>
               <p className="feat-card__desc">{f.desc}</p>
 
-              {/* Bullets */}
               <ul className="feat-card__bullets">
                 {f.bullets.map((b, j) => (
                   <li key={j}>
@@ -180,10 +212,7 @@ const Features = () => {
                 ))}
               </ul>
 
-              {/* Live preview */}
               <div className="feat-card__preview">{f.preview}</div>
-
-              {/* Glowing border on hover */}
               <div className="feat-card__glow" aria-hidden="true"/>
             </div>
           ))}
