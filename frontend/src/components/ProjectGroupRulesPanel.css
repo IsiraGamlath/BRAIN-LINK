@@ -1,0 +1,52 @@
+.rules-panel {
+  border-radius: 14px;
+  border: 1px solid #dbe6f6;
+  background: linear-gradient(180deg, #f9fcff 0%, #f3f8ff 100%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+  padding: 22px;
+}
+
+.rules-panel-title {
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.rules-panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rules-panel-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #e2ebf8;
+}
+
+.rules-panel-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #e0ecff;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}

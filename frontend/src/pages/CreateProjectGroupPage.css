@@ -1,0 +1,167 @@
+.create-page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+}
+
+.create-page-header h1 {
+  margin: 0;
+  font-size: 34px;
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.create-page-header p {
+  margin: 10px 0 0;
+  color: #475569;
+}
+
+.create-page-warning,
+.create-page-error {
+  margin-top: 16px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.create-page-warning {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+}
+
+.create-page-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.create-page-layout {
+  margin-top: 22px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.create-page-form-card {
+  border-radius: 14px;
+  border: 1px solid #dce6f7;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  padding: 22px;
+}
+
+.create-page-form-card h2 {
+  margin: 0 0 18px;
+  font-size: 20px;
+  color: #0f172a;
+}
+
+.create-page-field {
+  margin-bottom: 15px;
+}
+
+.create-page-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 700;
+}
+
+.create-page-field input,
+.create-page-field textarea,
+.create-page-field select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+}
+
+.create-page-field textarea {
+  resize: vertical;
+}
+
+.create-page-field input:focus,
+.create-page-field textarea:focus,
+.create-page-field select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.create-page-field .readonly {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.create-page-field .has-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.field-error {
+  margin: 6px 0 0;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.create-page-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.create-page-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-secondary {
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+}
+
+@media (max-width: 960px) {
+  .create-page-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .create-page {
+    padding: 18px 12px 24px;
+  }
+
+  .create-page-grid {
+    grid-template-columns: 1fr;
+  }
+}
