@@ -20,6 +20,11 @@ import { useCurrentUser } from "./context/CurrentUserContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import UserProfilePage from "./pages/UserProfilePage";
+import HelpFeedPage from "./pages/HelpFeedPage";
+import PostRequestPage from "./pages/PostRequestPage";
+import MyRequestsPage from "./pages/MyRequestsPage";
+import EditRequestPage from "./pages/EditRequestPage";
+import ChatPage from "./pages/ChatPage";
 
 // Landing page components
 import Hero from "./components/Hero/Hero";
@@ -127,13 +132,52 @@ function App() {
             path="/help-request"
             element={
               <div className="main-container">
-                <Sidebar />
                 <div className="content">
-                  <StudyGroupDashboard
-                    currentUser={currentUser}
-                    onAddNotification={handleAddNotification}
-                    onSetNotifications={handleSetNotifications}
-                  />
+                  <HelpFeedPage />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/post"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <PostRequestPage />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/my-requests"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <MyRequestsPage />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/edit/:id"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <EditRequestPage />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/chat/:requestId"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <ChatPage />
                 </div>
               </div>
             }

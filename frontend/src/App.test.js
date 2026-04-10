@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders kuppi session dashboard title', () => {
+test('renders brainlink header', () => {
   render(<App />);
-  const titleElement = screen.getByText(/kuppi session dashboard/i);
-  expect(titleElement).toBeInTheDocument();
+  const headerElement = screen.getByText(/brainlink/i);
+  expect(headerElement).toBeInTheDocument();
 });

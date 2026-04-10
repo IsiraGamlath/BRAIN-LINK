@@ -19,6 +19,7 @@ const userRoutes = require('./routes/User-Management/userRoutes');
 const resourceRoutes = require('./routes/Resource-Management/resourceRoutes');
 const adminRoutes = require('./routes/Admin-Moderation/adminRoutes');
 const reportRoutes = require('./routes/Admin-Moderation/reportRoutes');
+const peerHelpRequestRoutes = require('./routes/Peer_Help_Request');
 
 // ===== App Setup =====
 const app = express();
@@ -29,7 +30,9 @@ const MONGO_URI =
 
 // ===== Middleware =====
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 }));
 
@@ -56,6 +59,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/help', peerHelpRequestRoutes);
 
 // Optional test route from Kaushini_Study_Group
 app.get("/test", (req, res) => {
