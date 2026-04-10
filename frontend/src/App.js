@@ -17,36 +17,59 @@ import MyProjectGroupPage from "./pages/MyProjectGroupPage";
 import GroupDetailsPage from "./pages/GroupDetailsPage";
 import AcademicProfileModal from "./components/AcademicProfileModal";
 import { useCurrentUser } from "./context/CurrentUserContext";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import UserProfilePage from "./pages/UserProfilePage";
+
+// Landing page components
+import Hero from "./components/Hero/Hero";
+import About from "./components/About/About";
+import Features from "./components/Features/Features";
+import HowItWorks from "./components/HowItWorks/HowItWorks";
+import Benefits from "./components/Benefits/Benefits";
+import DashboardPreview from "./components/DashboardPreview/DashboardPreview";
+import CTASection from "./components/CTASection/CTASection";
+import Footer from "./components/Footer/Footer";
+
+function HomePage() {
+  return (
+    <div className="content">
+      <Hero />
+      <About />
+      <Features />
+      <HowItWorks />
+      <Benefits />
+      <DashboardPreview />
+      <div id="cta">
+        <CTASection />
+      </div>
+      <Footer />
+    </div>
+  );
+}
 
 function App() {
   // --- Shared state ---
-  const { currentUser } = useCurrentUser();
+  const { currentUser, setCurrentUserProfile } = useCurrentUser();
   const [showProfileModal, setShowProfileModal] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [, setNotifications] = useState([]);
 
   const handleEditProfile = useCallback(() => setShowProfileModal(true), []);
-  const handleProfileSaved = useCallback(() => setShowProfileModal(false), []);
-  const handleMarkAsRead = useCallback((id) => {
-    setNotifications(prev =>
-      prev.map(notif => notif.id === id ? { ...notif, read: true } : notif)
-    );
-  }, []);
+  const handleProfileSaved = useCallback((updatedProfile) => {
+    setCurrentUserProfile(updatedProfile);
+    setShowProfileModal(false);
+  }, [setCurrentUserProfile]);
   const handleAddNotification = useCallback((notif) => setNotifications(prev => [notif, ...prev]), []);
   const handleSetNotifications = useCallback((list) => setNotifications(list), []);
 
   return (
     <div className="app">
       {/* Kaushini: Header and Sidebar */}
-      <Header
-        user={currentUser}
-        onEditProfile={handleEditProfile}
-        notifications={notifications}
-        onMarkAsRead={handleMarkAsRead}
-      />
+      <Header />
 
       <div className="app-body">
         <Routes>
-          <Route path="/" element={<Navigate to="/project-group-hub" replace />} />
+          <Route path="/" element={<HomePage />} />
 
           <Route
             path="/project-group-hub"
@@ -101,6 +124,36 @@ function App() {
           />
 
           <Route
+            path="/help-request"
+            element={
+              <div className="main-container">
+                <Sidebar />
+                <div className="content">
+                  <StudyGroupDashboard
+                    currentUser={currentUser}
+                    onAddNotification={handleAddNotification}
+                    onSetNotifications={handleSetNotifications}
+                  />
+                </div>
+              </div>
+            }
+          />
+
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/profile"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <UserProfilePage currentUser={currentUser} onEditProfile={handleEditProfile} />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
             path="/kuppi/my-sessions"
             element={
               <div className="main-container">
@@ -124,7 +177,7 @@ function App() {
             }
           />
 
-          <Route path="*" element={<Navigate to="/project-group-hub" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 

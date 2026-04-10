@@ -66,6 +66,65 @@
   gap: 24px;
 }
 
+.auth-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-icon-link {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  border: 1px solid rgba(79, 70, 229, 0.8);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-icon-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+}
+
+.auth-nav-btn {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.auth-nav-btn-secondary {
+  color: #1e293b;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+}
+
+.auth-nav-btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.auth-nav-btn-primary {
+  color: #ffffff;
+  background: #4f46e5;
+  border: 1px solid #4f46e5;
+}
+
+.auth-nav-btn-primary:hover {
+  background: #4338ca;
+  border-color: #4338ca;
+}
+
 .profile-section {
   display: flex;
   align-items: center;
@@ -209,6 +268,11 @@
   .header-left,
   .header-right {
     gap: 12px;
+  }
+
+  .auth-nav-actions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .edit-profile-btn {

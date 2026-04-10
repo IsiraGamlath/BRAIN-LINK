@@ -7,8 +7,21 @@ const isValidDate = (value) => {
 
 const getSessionDateTime = (dateValue, startTime) => {
     const sessionDateTime = new Date(dateValue);
-    const [hours, minutes] = String(startTime).split(':');
-    sessionDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+
+    if (Number.isNaN(sessionDateTime.getTime())) {
+        return new Date('invalid');
+    }
+
+    const [hoursRaw, minutesRaw] = String(startTime || '').split(':');
+    const hours = parseInt(hoursRaw, 10);
+    const minutes = parseInt(minutesRaw, 10);
+
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+        sessionDateTime.setHours(0, 0, 0, 0);
+        return sessionDateTime;
+    }
+
+    sessionDateTime.setHours(hours, minutes, 0, 0);
     return sessionDateTime;
 };
 
@@ -82,8 +95,18 @@ const getAll = async (req, res) => {
 // Get upcoming sessions
 const getUpcoming = async (req, res) => {
     try {
-        const sessions = await Session.find({ date: { $gte: new Date() } });
-        res.status(200).json(sessions);
+        const now = new Date();
+        const sessions = await Session.find();
+
+        const upcomingSessions = sessions
+            .filter((session) => getSessionDateTime(session.date, session.startTime) >= now)
+            .sort(
+                (a, b) =>
+                    getSessionDateTime(a.date, a.startTime).getTime() -
+                    getSessionDateTime(b.date, b.startTime).getTime()
+            );
+
+        res.status(200).json(upcomingSessions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching upcoming sessions', error: error.message });
     }
@@ -92,8 +115,18 @@ const getUpcoming = async (req, res) => {
 // Get past sessions
 const getPast = async (req, res) => {
     try {
-        const sessions = await Session.find({ date: { $lt: new Date() } });
-        res.status(200).json(sessions);
+        const now = new Date();
+        const sessions = await Session.find();
+
+        const pastSessions = sessions
+            .filter((session) => getSessionDateTime(session.date, session.startTime) < now)
+            .sort(
+                (a, b) =>
+                    getSessionDateTime(b.date, b.startTime).getTime() -
+                    getSessionDateTime(a.date, a.startTime).getTime()
+            );
+
+        res.status(200).json(pastSessions);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching past sessions', error: error.message });
     }

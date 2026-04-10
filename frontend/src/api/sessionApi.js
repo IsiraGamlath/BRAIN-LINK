@@ -1,12 +1,25 @@
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+const AUTH_STATE_KEY = 'bl-auth';
+const USER_KEY = 'bl-user';
+const PROFILE_KEY = 'brainlink.currentUserProfile';
 
 const api = axios.create({
   baseURL: API_BASE_URL
 });
 
-export const getAuthToken = () => localStorage.getItem('token');
+export const getAuthToken = () => localStorage.getItem('bl-access-token') || localStorage.getItem('token');
+
+const readJsonFromStorage = (key) => {
+  try {
+    return JSON.parse(localStorage.getItem(key) || 'null');
+  } catch {
+    return null;
+  }
+};
+
+const normalizeIdentifier = (value) => String(value || '').trim().toLowerCase();
 
 const decodeJwtPayload = (token) => {
   try {
@@ -37,6 +50,64 @@ export const getCurrentUserId = () => {
   return payload.userId || payload.id || payload._id || payload.sub || null;
 };
 
+export const getCurrentUserIdentifiers = () => collectCurrentUserIdentifiers();
+
+export const getCurrentStudentId = () => getPreferredStudentId() || getCurrentUserId();
+
+const collectCurrentUserIdentifiers = () => {
+  const candidates = new Set();
+
+  const addCandidate = (value) => {
+    const normalized = normalizeIdentifier(value);
+    if (normalized) {
+      candidates.add(normalized);
+    }
+  };
+
+  const tokenPayload = decodeJwtPayload(getAuthToken() || '');
+  addCandidate(tokenPayload?.userId);
+  addCandidate(tokenPayload?.id);
+  addCandidate(tokenPayload?._id);
+  addCandidate(tokenPayload?.sub);
+  addCandidate(tokenPayload?.slIIId);
+  addCandidate(tokenPayload?.itNumber);
+
+  const authState = readJsonFromStorage(AUTH_STATE_KEY);
+  addCandidate(authState?.user?._id);
+  addCandidate(authState?.user?.slIIId);
+
+  const authUser = readJsonFromStorage(USER_KEY);
+  addCandidate(authUser?._id);
+  addCandidate(authUser?.slIIId);
+
+  const profileUser = readJsonFromStorage(PROFILE_KEY);
+  addCandidate(profileUser?.itNumber);
+  addCandidate(profileUser?.slIIId);
+
+  return Array.from(candidates);
+};
+
+const getPreferredStudentId = () => {
+  const profileUser = readJsonFromStorage(PROFILE_KEY);
+  if (profileUser?.itNumber && String(profileUser.itNumber).trim()) {
+    return String(profileUser.itNumber).trim();
+  }
+
+  const authState = readJsonFromStorage(AUTH_STATE_KEY);
+  if (authState?.user?.slIIId && String(authState.user.slIIId).trim()) {
+    return String(authState.user.slIIId).trim();
+  }
+
+  const authUser = readJsonFromStorage(USER_KEY);
+  if (authUser?.slIIId && String(authUser.slIIId).trim()) {
+    return String(authUser.slIIId).trim();
+  }
+
+  const payload = decodeJwtPayload(getAuthToken() || '');
+  const tokenIdentity = payload?.slIIId || payload?.itNumber || payload?.userId || payload?.id || payload?._id || payload?.sub;
+  return tokenIdentity ? String(tokenIdentity).trim() : null;
+};
+
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
   if (token) {
@@ -49,27 +120,43 @@ const normalizeSession = (session) => ({
   ...session
 });
 
-const filterSessionsByUser = (sessions, userId) => {
-  if (!userId) return sessions;
-  return sessions.filter((session) => !session.studentId || session.studentId === userId);
+const filterSessionsByUser = (sessions, identifiers) => {
+  if (!Array.isArray(identifiers) || identifiers.length === 0) {
+    return sessions;
+  }
+
+  const identifierSet = new Set(identifiers.map(normalizeIdentifier).filter(Boolean));
+
+  return sessions.filter((session) => {
+    const ownerId = normalizeIdentifier(session?.studentId);
+    return !ownerId || identifierSet.has(ownerId);
+  });
 };
 
 export const fetchUpcomingSessions = async () => {
-  const userId = getCurrentUserId();
+  const identifiers = collectCurrentUserIdentifiers();
   const response = await api.get('/sessions/upcoming');
   const sessions = Array.isArray(response.data) ? response.data : [];
-  return filterSessionsByUser(sessions, userId).map(normalizeSession);
+  return filterSessionsByUser(sessions, identifiers).map(normalizeSession);
 };
 
 export const fetchPastSessions = async () => {
-  const userId = getCurrentUserId();
+  const identifiers = collectCurrentUserIdentifiers();
   const response = await api.get('/sessions/past');
   const sessions = Array.isArray(response.data) ? response.data : [];
-  return filterSessionsByUser(sessions, userId).map(normalizeSession);
+  return filterSessionsByUser(sessions, identifiers).map(normalizeSession);
+};
+
+export const fetchAllSessions = async () => {
+  const response = await api.get('/sessions');
+  const sessions = Array.isArray(response.data) ? response.data : [];
+  return sessions.map(normalizeSession);
 };
 
 export const createSession = async (formData) => {
-  const userId = getCurrentUserId();
+  const preferredStudentId = getPreferredStudentId();
+  const submittedStudentId = typeof formData.studentId === 'string' ? formData.studentId.trim() : '';
+  const resolvedStudentId = submittedStudentId || preferredStudentId || 'anonymous-user';
 
   const payload = {
     subject: formData.subject,
@@ -77,7 +164,7 @@ export const createSession = async (formData) => {
     startTime: formData.startTime,
     duration: Number(formData.duration),
     mode: formData.mode,
-    studentId: formData.studentId || userId || 'anonymous-user'
+    studentId: resolvedStudentId
   };
 
   if (formData.mode === 'Online') {
@@ -93,8 +180,11 @@ export const createSession = async (formData) => {
 };
 
 export const updateSession = async (id, formData, existingSession = {}) => {
-  const userId = getCurrentUserId();
   const mode = formData.mode || existingSession.mode || 'Online';
+  const preferredStudentId = getPreferredStudentId();
+  const submittedStudentId = typeof formData.studentId === 'string' ? formData.studentId.trim() : '';
+  const existingStudentId = typeof existingSession.studentId === 'string' ? existingSession.studentId.trim() : '';
+  const resolvedStudentId = submittedStudentId || existingStudentId || preferredStudentId || 'anonymous-user';
 
   const payload = {
     subject: formData.subject,
@@ -102,7 +192,7 @@ export const updateSession = async (id, formData, existingSession = {}) => {
     startTime: formData.startTime,
     duration: Number(formData.duration),
     mode,
-    studentId: formData.studentId || existingSession.studentId || userId || 'anonymous-user'
+    studentId: resolvedStudentId
   };
 
   if (mode === 'Online') {

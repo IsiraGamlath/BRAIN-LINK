@@ -131,7 +131,13 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
 
       <div className="mb-4">
         <label className="label block mb-2">Student ID</label>
-        <input className="input-field" name="studentId" value={formData.studentId} onChange={handleChange} required />
+        <input
+          className="input-field"
+          name="studentId"
+          value={formData.studentId}
+          onChange={handleChange}
+          placeholder="Leave blank to use your logged-in account ID"
+        />
       </div>
 
       {initialValues?.status ? (

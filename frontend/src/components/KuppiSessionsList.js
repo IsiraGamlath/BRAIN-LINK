@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
-
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
-const CURRENT_STUDENT = 'Isira';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  fetchAllSessions,
+  getCurrentStudentId,
+  getCurrentUserIdentifiers
+} from '../api/sessionApi';
 
 function KuppiSessionsList() {
   const [sessions, setSessionsList] = useState([]);
@@ -12,13 +13,17 @@ function KuppiSessionsList() {
   const [searchSubject, setSearchSubject] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [joinedSessions, setJoinedSessions] = useState(new Set());
+  const currentStudentId = useMemo(() => getCurrentStudentId() || 'Guest', []);
+  const currentIdentifierSet = useMemo(
+    () => new Set(getCurrentUserIdentifiers().map((id) => String(id || '').trim().toLowerCase())),
+    []
+  );
 
   const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`${API_BASE_URL}/sessions`);
-      const allSessions = Array.isArray(response.data) ? response.data : [];
+      const allSessions = await fetchAllSessions();
       setSessionsList(allSessions);
       setFilteredSessions(allSessions);
     } catch (err) {
@@ -67,12 +72,20 @@ function KuppiSessionsList() {
     if (!session.participants || !Array.isArray(session.participants)) {
       return false;
     }
-    return session.participants.includes(CURRENT_STUDENT);
+
+    return session.participants.some((participant) =>
+      currentIdentifierSet.has(String(participant || '').trim().toLowerCase())
+    );
+  };
+
+  const isOwnedByCurrentUser = (session) => {
+    const ownerId = String(session?.studentId || '').trim().toLowerCase();
+    return ownerId ? currentIdentifierSet.has(ownerId) : false;
   };
 
   const canJoin = (session) => {
     const isAlreadyJoined = isStudentJoined(session) || joinedSessions.has(session._id);
-    return !isAlreadyJoined && session.status === 'Booked';
+    return !isAlreadyJoined && !isOwnedByCurrentUser(session) && session.status === 'Booked';
   };
 
   const formatDate = (dateString) => {
@@ -90,7 +103,7 @@ function KuppiSessionsList() {
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-2">Kuppi Sessions</h1>
           <p className="text-lg mb-1">Browse and join study sessions with your peers</p>
-          <small className="opacity-90">Logged in as: {CURRENT_STUDENT}</small>
+          <small className="opacity-90">Logged in as: {currentStudentId}</small>
         </div>
       </div>
 
@@ -144,6 +157,7 @@ function KuppiSessionsList() {
           {filteredSessions.map((session) => {
             const isJoined = isStudentJoined(session) || joinedSessions.has(session._id);
             const showJoinButton = canJoin(session);
+            const isOwned = isOwnedByCurrentUser(session);
             const participantCount = Array.isArray(session.participants) ? session.participants.length : 0;
 
             return (
@@ -181,7 +195,7 @@ function KuppiSessionsList() {
                   </div>
                   <div className="flex justify-between">
                     <strong className="text-brand">Host:</strong>
-                    <span>{session.studentId || 'Unknown'}</span>
+                    <span>{isOwned ? 'You' : session.studentId || 'Unknown'}</span>
                   </div>
                   <div className="flex justify-between">
                     <strong className="text-brand">Participants:</strong>
@@ -223,6 +237,10 @@ function KuppiSessionsList() {
                     >
                       Join Session
                     </button>
+                  ) : isOwned ? (
+                    <span className="flex-1 bg-blue-100 text-accent-blue border border-blue-300 rounded-lg py-2 text-center font-semibold text-sm">
+                      Your Session
+                    </span>
                   ) : isJoined ? (
                     <span className="flex-1 bg-green-100 text-green-800 border border-green-300 rounded-lg py-2 text-center font-semibold text-sm">
                       ✓ Joined

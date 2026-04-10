@@ -17,6 +17,12 @@ const isBlankOrEmpty = (value) => {
   return !value || String(value).trim() === "";
 };
 
+const normalizeText = (value) => String(value || "").trim().toLowerCase();
+
+const hasMatchingSpecialization = (groupSpecialization, studentSpecialization) => {
+  return normalizeText(groupSpecialization) === normalizeText(studentSpecialization);
+};
+
 const resolveCurrentUser = (req) => {
   const payloadUser = req.body?.currentUser || {};
 
@@ -319,6 +325,24 @@ const joinGroup = async (req, res) => {
       });
     }
 
+    const requesterProfile = await StudentProfile.findOne({
+      itNumber: requesterItNumber.trim(),
+    });
+
+    if (!requesterProfile) {
+      return res.status(400).json({
+        success: false,
+        message: "Please complete your academic profile before joining groups",
+      });
+    }
+
+    if (!hasMatchingSpecialization(group.specialization, requesterProfile.specialization)) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only join groups in your own specialization",
+      });
+    }
+
     // Check if group is full
     if (group.members.length >= group.maxMembers) {
       return res.status(400).json({
@@ -430,6 +454,24 @@ const directJoinGroup = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "Group not found",
+      });
+    }
+
+    const requesterProfile = await StudentProfile.findOne({
+      itNumber: itNumber.trim(),
+    });
+
+    if (!requesterProfile) {
+      return res.status(400).json({
+        success: false,
+        message: "Student profile not found. Complete profile first.",
+      });
+    }
+
+    if (!hasMatchingSpecialization(group.specialization, requesterProfile.specialization)) {
+      return res.status(403).json({
+        success: false,
+        message: "Only students with matching specialization can join this group",
       });
     }
 

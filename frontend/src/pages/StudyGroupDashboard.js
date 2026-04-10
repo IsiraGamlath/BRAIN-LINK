@@ -78,7 +78,9 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
   const fetchGroups = useCallback(async () => {
     try {
       setLoadingGroups(true);
-      const response = await axios.get(`${API_BASE}/groups`);
+      const response = await axios.get(`${API_BASE}/groups/relevant`, {
+        params: { itNumber: currentUser.itNumber },
+      });
       const serverGroups = Array.isArray(response.data?.groups) ? response.data.groups : [];
       setGroups(serverGroups);
     } catch (error) {
@@ -88,7 +90,7 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
     } finally {
       setLoadingGroups(false);
     }
-  }, []);
+  }, [currentUser.itNumber]);
 
   const fetchLeaderRequests = useCallback(
     async (sourceGroups) => {
