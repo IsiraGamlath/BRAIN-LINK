@@ -59,7 +59,7 @@ export const GuestRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
 
   if (loading) return <LoadingSpinner />;
-  if (user)    return <Navigate to={isAdmin ? '/admin-dashboard' : '/user-dashboard'} replace />;
+  if (user)    return <Navigate to={isAdmin ? '/admin-dashboard' : '/profile'} replace />;
   return children;
 };
 

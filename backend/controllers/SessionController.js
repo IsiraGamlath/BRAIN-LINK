@@ -1,5 +1,17 @@
 const Session = require('../model/SessionModel');
 
+const toSafeString = (value) => {
+    if (value === undefined || value === null) {
+        return '';
+    }
+
+    return String(value).trim();
+};
+
+const normalizeIdentity = (value) => toSafeString(value).toLowerCase();
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const isValidDate = (value) => {
     const parsed = new Date(value);
     return !Number.isNaN(parsed.getTime());
@@ -252,6 +264,118 @@ const remove = async (req, res) => {
     }
 };
 
+// Join session
+const join = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const joiningStudentId = toSafeString(req.body?.studentId);
+
+        if (!joiningStudentId) {
+            return res.status(400).json({ message: 'studentId is required to join a session' });
+        }
+
+        const session = await Session.findById(id);
+
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        if (session.status !== 'Booked') {
+            return res.status(400).json({ message: 'Only scheduled sessions can be joined' });
+        }
+
+        const creatorId = toSafeString(session.studentId);
+
+        if (normalizeIdentity(creatorId) === normalizeIdentity(joiningStudentId)) {
+            return res.status(400).json({ message: 'Session creator cannot join their own session' });
+        }
+
+        if (!Array.isArray(session.participants)) {
+            session.participants = [];
+        }
+
+        const alreadyJoined = session.participants.some(
+            (participant) => normalizeIdentity(participant) === normalizeIdentity(joiningStudentId)
+        );
+
+        if (alreadyJoined) {
+            return res.status(200).json({
+                message: 'You already joined this session',
+                session
+            });
+        }
+
+        session.participants.push(joiningStudentId);
+
+        if (!Array.isArray(session.joinNotifications)) {
+            session.joinNotifications = [];
+        }
+
+        const moduleName = toSafeString(session.subject) || 'this module';
+        session.joinNotifications.push({
+            participantItNumber: joiningStudentId,
+            message: `${joiningStudentId} joined ${moduleName}.`,
+            createdAt: new Date()
+        });
+
+        const updatedSession = await session.save();
+
+        return res.status(200).json({
+            message: 'Session joined successfully',
+            session: updatedSession
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Error joining session', error: error.message });
+    }
+};
+
+// Get join notifications for a session creator
+const getCreatorNotifications = async (req, res) => {
+    try {
+        const creatorId = toSafeString(req.params.creatorId);
+
+        if (!creatorId) {
+            return res.status(400).json({ message: 'creatorId is required' });
+        }
+
+        const sessions = await Session.find({
+            studentId: {
+                $regex: new RegExp(`^${escapeRegex(creatorId)}$`, 'i')
+            }
+        }).select('subject joinNotifications createdAt updatedAt');
+
+        const notifications = [];
+
+        sessions.forEach((session) => {
+            const sessionSubject = toSafeString(session.subject) || 'this module';
+            const entries = Array.isArray(session.joinNotifications) ? session.joinNotifications : [];
+
+            entries.forEach((entry) => {
+                const participantItNumber = toSafeString(entry.participantItNumber) || 'A student';
+                const message = toSafeString(entry.message) || `${participantItNumber} joined ${sessionSubject}.`;
+                const timestamp = entry.createdAt || session.updatedAt || session.createdAt || new Date();
+                const notificationId = toSafeString(entry._id)
+                    ? `session-join:${session._id}:${entry._id}`
+                    : `session-join:${session._id}:${participantItNumber}:${new Date(timestamp).toISOString()}`;
+
+                notifications.push({
+                    id: notificationId,
+                    icon: '📚',
+                    message,
+                    timestamp,
+                    targetPath: '/kuppi/browse-sessions'
+                });
+            });
+        });
+
+        notifications.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        return res.status(200).json(notifications);
+    } catch (error) {
+        return res.status(500).json({ message: 'Error fetching creator notifications', error: error.message });
+    }
+};
+
 module.exports = {
     getAll,
     getUpcoming,
@@ -260,5 +384,7 @@ module.exports = {
     getById,
     update,
     cancel,
-    remove
+    remove,
+    join,
+    getCreatorNotifications
 };

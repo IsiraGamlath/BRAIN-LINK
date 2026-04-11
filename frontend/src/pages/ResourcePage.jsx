@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  apiAddComment,
+  apiCreateResource,
+  apiDeleteResource,
+  apiDownloadResource,
+  apiGetResources,
+  apiRateResource,
+  apiUpdateResource
+} from '../api/api';
 import './ResourcePage.css';
 
 const FILE_TYPES     = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'video', 'image', 'link', 'other'];
@@ -7,68 +16,6 @@ const RESOURCE_TYPES = ['lecture_notes','past_papers','assignments','tutorials',
 const VISIBILITIES   = ['public', 'batch', 'private'];
 
 const EMPTY_FORM = { title:'', description:'', fileUrl:'', fileType:'pdf', subject:'', topic:'', tags:'', resourceType:'lecture_notes', visibility:'batch' };
-
-// Mock data for resources
-const MOCK_RESOURCES = [
-  {
-    _id: 'r1',
-    title: 'Data Structures Notes',
-    description: 'Comprehensive notes on data structures including arrays, linked lists, stacks, and queues.',
-    fileUrl: 'https://example.com/ds-notes.pdf',
-    fileType: 'pdf',
-    subject: 'Computer Science',
-    topic: 'Data Structures',
-    tags: ['data structures', 'algorithms', 'notes'],
-    resourceType: 'lecture_notes',
-    visibility: 'public',
-    uploader: { _id: 'u1', fullName: 'Alice Silva' },
-    views: 128,
-    downloads: 74,
-    rating: 4.5,
-    comments: [
-      { _id: 'c1', user: { fullName: 'Bob Perera' }, text: 'Great notes!', createdAt: new Date().toISOString() }
-    ],
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'r2',
-    title: 'Algorithms Past Paper',
-    description: 'Past examination paper for Algorithms course with solutions.',
-    fileUrl: 'https://example.com/algorithms-paper.docx',
-    fileType: 'docx',
-    subject: 'Computer Science',
-    topic: 'Algorithms',
-    tags: ['algorithms', 'past paper', 'exam'],
-    resourceType: 'past_papers',
-    visibility: 'public',
-    uploader: { _id: 'u2', fullName: 'Bob Perera' },
-    views: 220,
-    downloads: 110,
-    rating: 4.2,
-    comments: [],
-    createdAt: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    _id: 'r3',
-    title: 'Database Design Tutorial',
-    description: 'Step-by-step tutorial on database design principles and normalization.',
-    fileUrl: 'https://example.com/db-tutorial.pdf',
-    fileType: 'pdf',
-    subject: 'Computer Science',
-    topic: 'Database Systems',
-    tags: ['database', 'design', 'normalization'],
-    resourceType: 'tutorials',
-    visibility: 'batch',
-    uploader: { _id: 'u1', fullName: 'Alice Silva' },
-    views: 95,
-    downloads: 45,
-    rating: 4.8,
-    comments: [
-      { _id: 'c2', user: { fullName: 'Charlie Admin' }, text: 'Very helpful tutorial!', createdAt: new Date().toISOString() }
-    ],
-    createdAt: new Date(Date.now() - 172800000).toISOString()
-  }
-];
 
 const ResourcePage = () => {
   const [resources, setResources]     = useState([]);
@@ -96,30 +43,26 @@ const ResourcePage = () => {
   const loadResources = useCallback(async () => {
     setLoading(true); setError('');
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let filtered = [...MOCK_RESOURCES];
-      
-      // Apply search filter
+      const params = new URLSearchParams();
+      if (filterSubject) params.set('subject', filterSubject);
+      if (filterType) params.set('resourceType', filterType);
+      params.set('sort', '-createdAt');
+      params.set('limit', '100');
+
+      const query = params.toString() ? `?${params.toString()}` : '';
+      const data = await apiGetResources(query);
+      const fetched = Array.isArray(data?.resources) ? data.resources : [];
+
+      let filtered = fetched;
+
       if (search) {
         const searchLower = search.toLowerCase();
-        filtered = filtered.filter(r => 
-          r.title.toLowerCase().includes(searchLower) ||
-          r.subject.toLowerCase().includes(searchLower) ||
-          r.topic.toLowerCase().includes(searchLower) ||
-          (r.tags && r.tags.some(tag => tag.toLowerCase().includes(searchLower)))
+        filtered = filtered.filter(r =>
+          String(r.title || '').toLowerCase().includes(searchLower) ||
+          String(r.subject || '').toLowerCase().includes(searchLower) ||
+          String(r.topic || '').toLowerCase().includes(searchLower) ||
+          (r.tags && r.tags.some(tag => String(tag || '').toLowerCase().includes(searchLower)))
         );
-      }
-      
-      // Apply subject filter
-      if (filterSubject) {
-        filtered = filtered.filter(r => r.subject === filterSubject);
-      }
-      
-      // Apply resource type filter
-      if (filterType) {
-        filtered = filtered.filter(r => r.resourceType === filterType);
       }
       
       setResources(filtered);
@@ -156,31 +99,17 @@ const ResourcePage = () => {
       const payload = { ...form, tags: form.tags.split(',').map(t=>t.trim()).filter(Boolean) };
       
       if (editTarget) {
-        // Update existing resource
-        setResources(prev => prev.map(r => 
-          r._id === editTarget 
-            ? { ...r, ...payload, updatedAt: new Date().toISOString() }
-            : r
-        ));
+        await apiUpdateResource(editTarget, payload);
         showToast('Resource updated ✓');
       } else {
-        // Create new resource
-        const newResource = {
-          ...payload,
-          _id: `r${Date.now()}`,
-          uploader: { _id: 'u1', fullName: 'Current User' }, // Mock current user
-          views: 0,
-          downloads: 0,
-          rating: 0,
-          comments: [],
-          createdAt: new Date().toISOString()
-        };
-        setResources(prev => [newResource, ...prev]);
+        await apiCreateResource(payload);
         showToast('Resource uploaded ✓');
       }
       
       setShowModal(false);
-      loadResources();
+      setEditTarget(null);
+      setForm(EMPTY_FORM);
+      await loadResources();
     } catch (err) { showToast(err.message, false); }
     finally { setSubmitting(false); }
   };
@@ -188,61 +117,39 @@ const ResourcePage = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this resource?')) return;
     try {
-      setResources(prev => prev.filter(r => r._id !== id));
+      await apiDeleteResource(id);
       showToast('Resource deleted');
-      loadResources();
+      await loadResources();
     } catch (e) { showToast(e.message, false); }
   };
 
   const handleDownload = async (r) => {
     try {
-      // Mock download - just open the file URL
-      window.open(r.fileUrl, '_blank');
-      showToast('Download started ⬇');
-      // Update download count in mock data
-      setResources(prev => prev.map(res => 
-        res._id === r._id 
-          ? { ...res, downloads: res.downloads + 1 }
-          : res
-      ));
-      loadResources();
+      const data = await apiDownloadResource(r._id);
+      const url = data?.fileUrl || r.fileUrl;
+      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      showToast(data?.message || 'Download started ⬇');
+      await loadResources();
     } catch (e) { showToast(e.message, false); }
   };
 
   const handleRate = async (id, rating) => {
     try {
-      // Mock rating update
-      setResources(prev => prev.map(r => 
-        r._id === id 
-          ? { ...r, rating: rating }
-          : r
-      ));
+      await apiRateResource(id, rating);
       showToast(`Rated ${rating} ★`);
       setRatingTarget(null);
-      loadResources();
+      await loadResources();
     } catch (e) { showToast(e.message, false); }
   };
 
   const handleComment = async (id) => {
     if (!commentText.trim() || commentText.trim().length < 3) { showToast('Comment must be at least 3 characters', false); return; }
     try {
-      // Mock comment addition
-      const newComment = {
-        _id: `c${Date.now()}`,
-        user: { fullName: 'Current User' }, // Mock current user
-        text: commentText.trim(),
-        createdAt: new Date().toISOString()
-      };
-      
-      setResources(prev => prev.map(r => 
-        r._id === id 
-          ? { ...r, comments: [...(r.comments || []), newComment] }
-          : r
-      ));
-      
+      await apiAddComment(id, commentText.trim());
       showToast('Comment added ✓');
       setCommentTarget(null);
       setCommentText('');
+      await loadResources();
     } catch (e) { showToast(e.message, false); }
   };
 
@@ -270,8 +177,8 @@ const ResourcePage = () => {
               <p className="rp-page-brand__sub">Study materials, notes & more</p>
             </div>
           </div>
-          <div style={{display:'flex', gap:'0.75rem', alignItems:'center'}}>
-            <Link to="/user-dashboard" className="rp-page-nav-link">My Dashboard</Link>
+          <div className="rp-page-header-actions">
+            <Link to="/profile" className="rp-page-nav-link">My Profile</Link>
             <button id="rp-upload-btn" className="rp-page-upload-btn" onClick={openCreate}>+ Upload Resource</button>
           </div>
         </div>
@@ -309,8 +216,8 @@ const ResourcePage = () => {
         <div className="rp-stats-bar">
           <span className="rp-stats-count">{resources.length} resource{resources.length!==1?'s':''} found</span>
           <span className="rp-stats-divider"/>
-          <span className="rp-stats-item">👁 {resources.reduce((s,r)=>s+r.views,0)} total views</span>
-          <span className="rp-stats-item">⬇ {resources.reduce((s,r)=>s+r.downloads,0)} downloads</span>
+          <span className="rp-stats-item">👁 {resources.reduce((s,r)=>s+(r.views || 0),0)} total views</span>
+          <span className="rp-stats-item">⬇ {resources.reduce((s,r)=>s+(r.downloads || 0),0)} downloads</span>
         </div>
 
         {error  && <div className="rp-page-error">{error}</div>}
@@ -343,9 +250,9 @@ const ResourcePage = () => {
                   )}
                 </div>
                 <div className="res-card__meta">
-                  <span>👁 {r.views}</span>
-                  <span>⬇ {r.downloads}</span>
-                  <span>⭐ {r.averageRating?.toFixed(1)||'—'} ({r.totalRatings})</span>
+                  <span>👁 {r.views || 0}</span>
+                  <span>⬇ {r.downloads || 0}</span>
+                  <span>⭐ {(r.totalRatings || 0) > 0 ? Number(r.averageRating || 0).toFixed(1) : '—'} ({r.totalRatings || 0})</span>
                 </div>
                 <div className="res-card__uploader">
                   <span className="res-av">{r.uploader?.fullName?.[0]||'?'}</span>

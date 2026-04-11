@@ -45,15 +45,15 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
   };
 
   return (
-    <form className="bg-white border-2 border-blue-100 rounded-2xl shadow-brand p-6 mb-6" onSubmit={handleSubmit}>
-      <h2 className="text-2xl font-bold text-brand mb-4">
+    <form className="kuppi-fresh-form" onSubmit={handleSubmit}>
+      <h2 className="kuppi-fresh-form-title">
         {submitLabel === 'Update Session' ? 'Edit Session' : 'Create New Session'}
       </h2>
 
-      <div className="mb-4">
-        <label className="label block mb-2">Subject</label>
+      <div className="kuppi-fresh-field">
+        <label className="kuppi-fresh-label">Subject</label>
         <input
-          className="input-field"
+          className="kuppi-fresh-input"
           name="subject"
           value={formData.subject}
           onChange={handleChange}
@@ -61,24 +61,24 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="label block mb-2">Date</label>
+      <div className="kuppi-fresh-form-grid">
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Date</label>
           <input
             type="date"
             min={today}
-            className="input-field"
+            className="kuppi-fresh-input"
             name="date"
             value={formData.date}
             onChange={handleChange}
             required
           />
         </div>
-        <div>
-          <label className="label block mb-2">Start Time</label>
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Start Time</label>
           <input
             type="time"
-            className="input-field"
+            className="kuppi-fresh-input"
             name="startTime"
             value={formData.startTime}
             onChange={handleChange}
@@ -87,22 +87,22 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="label block mb-2">Duration (minutes)</label>
+      <div className="kuppi-fresh-form-grid">
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Duration (minutes)</label>
           <input
             type="number"
             min="1"
-            className="input-field"
+            className="kuppi-fresh-input"
             name="duration"
             value={formData.duration}
             onChange={handleChange}
             required
           />
         </div>
-        <div>
-          <label className="label block mb-2">Mode</label>
-          <select className="input-field" name="mode" value={formData.mode} onChange={handleChange} required>
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Mode</label>
+          <select className="kuppi-fresh-input" name="mode" value={formData.mode} onChange={handleChange} required>
             <option value="Online">Online</option>
             <option value="Physical">Physical</option>
           </select>
@@ -110,10 +110,10 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
       </div>
 
       {formData.mode === 'Online' ? (
-        <div className="mb-4">
-          <label className="label block mb-2">Meeting Link</label>
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Meeting Link</label>
           <input
-            className="input-field"
+            className="kuppi-fresh-input"
             name="meetingLink"
             value={formData.meetingLink}
             onChange={handleChange}
@@ -123,16 +123,22 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
       ) : null}
 
       {formData.mode === 'Physical' ? (
-        <div className="mb-4">
-          <label className="label block mb-2">Location</label>
-          <input className="input-field" name="location" value={formData.location} onChange={handleChange} required />
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Location</label>
+          <input
+            className="kuppi-fresh-input"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            required
+          />
         </div>
       ) : null}
 
-      <div className="mb-4">
-        <label className="label block mb-2">Student ID</label>
+      <div className="kuppi-fresh-field">
+        <label className="kuppi-fresh-label">Student ID</label>
         <input
-          className="input-field"
+          className="kuppi-fresh-input"
           name="studentId"
           value={formData.studentId}
           onChange={handleChange}
@@ -141,9 +147,9 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
       </div>
 
       {initialValues?.status ? (
-        <div className="mb-4">
-          <label className="label block mb-2">Status</label>
-          <select className="input-field" name="status" value={formData.status} onChange={handleChange}>
+        <div className="kuppi-fresh-field">
+          <label className="kuppi-fresh-label">Status</label>
+          <select className="kuppi-fresh-input" name="status" value={formData.status} onChange={handleChange}>
             <option value="Booked">Booked</option>
             <option value="Cancelled">Cancelled</option>
             <option value="Completed">Completed</option>
@@ -151,11 +157,16 @@ function SessionForm({ initialValues, onSubmit, onCancel, isSubmitting, submitLa
         </div>
       ) : null}
 
-      <div className="flex gap-3">
-        <button type="submit" className="btn-primary flex-1 py-2" disabled={isSubmitting}>
+      <div className="kuppi-fresh-form-actions">
+        <button type="submit" className="kuppi-fresh-primary-btn kuppi-fresh-btn-sm" disabled={isSubmitting}>
           {isSubmitting ? 'Saving...' : submitLabel}
         </button>
-        <button type="button" className="btn-outline flex-1 py-2" onClick={onCancel} disabled={isSubmitting}>
+        <button
+          type="button"
+          className="kuppi-fresh-ghost-btn kuppi-fresh-btn-sm"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           Cancel
         </button>
       </div>

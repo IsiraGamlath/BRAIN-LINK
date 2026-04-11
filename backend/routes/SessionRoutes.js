@@ -14,8 +14,14 @@ router.get('/past', SessionController.getPast);
 // POST create new session
 router.post('/', SessionController.create);
 
+// POST join session
+router.post('/:id/join', SessionController.join);
+
 // PUT cancel session
 router.put('/cancel/:id', SessionController.cancel);
+
+// GET creator notifications
+router.get('/notifications/:creatorId', SessionController.getCreatorNotifications);
 
 // GET session by ID
 router.get('/:id', SessionController.getById);

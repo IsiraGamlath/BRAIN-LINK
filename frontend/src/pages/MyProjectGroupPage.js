@@ -6,7 +6,7 @@ import StatusBadge from "../components/StatusBadge";
 
 const API_BASE = "http://localhost:5000/api";
 
-function MyProjectGroupPage({ currentUser }) {
+function MyProjectGroupPage({ currentUser, onViewGroupDetails }) {
   const navigate = useNavigate();
   const [groups, setGroups] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -255,7 +255,17 @@ function MyProjectGroupPage({ currentUser }) {
           </div>
 
           <div className="my-group-actions">
-            <button className="my-group-secondary" onClick={() => navigate(`/group-details/${myGroup._id}`)}>
+            <button
+              className="my-group-secondary"
+              onClick={() => {
+                if (typeof onViewGroupDetails === "function") {
+                  onViewGroupDetails(myGroup._id);
+                  return;
+                }
+
+                navigate(`/group-details/${myGroup._id}`);
+              }}
+            >
               View Group Details
             </button>
 

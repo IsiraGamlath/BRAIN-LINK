@@ -215,3 +215,23 @@ export const deleteSession = async (id) => {
   const response = await api.delete(`/sessions/${id}`);
   return response.data;
 };
+
+export const joinSession = async (id, studentId) => {
+  const payload = {
+    studentId: typeof studentId === 'string' ? studentId.trim() : ''
+  };
+
+  const response = await api.post(`/sessions/${id}/join`, payload);
+  return normalizeSession(response.data.session || response.data);
+};
+
+export const fetchCreatorSessionNotifications = async (creatorId) => {
+  const normalizedCreatorId = typeof creatorId === 'string' ? creatorId.trim() : '';
+
+  if (!normalizedCreatorId) {
+    return [];
+  }
+
+  const response = await api.get(`/sessions/notifications/${encodeURIComponent(normalizedCreatorId)}`);
+  return Array.isArray(response.data) ? response.data : [];
+};

@@ -81,6 +81,34 @@ exports.getUserHelpRequests = async (req, res) => {
   }
 };
 
+// Controller: Fetch help requests where user is requester or helper
+// GET /api/help/inbox/:userId
+exports.getUserInboxHelpRequests = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const normalizedUserId = String(userId || '').trim();
+
+    if (!normalizedUserId) {
+      return res.status(400).json({ message: 'userId is required' });
+    }
+
+    // Escape user-supplied input before building regex for safe case-insensitive matching.
+    const escapedUserId = normalizedUserId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const identityMatcher = new RegExp(`^${escapedUserId}$`, 'i');
+
+    const requests = await HelpRequest.find({
+      $or: [
+        { userId: identityMatcher },
+        { helperId: identityMatcher },
+      ],
+    }).sort({ updatedAt: -1, createdAt: -1 });
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching inbox requests', error: error.message });
+  }
+};
+
 // ==========================
 // UPDATE OPERATIONS
 // ==========================
@@ -94,21 +122,41 @@ exports.respondToHelpRequest = async (req, res) => {
     const { id } = req.params;
     const { helperId, helperMessage } = req.body;
 
-    // Find and update the request
-    const request = await HelpRequest.findByIdAndUpdate(
-      id,
-      {
-        status: 'Accepted',
-        helperId: helperId || 'helper',
-        helperMessage: helperMessage,
-        updatedAt: Date.now(),
-      },
-      { new: true } // Return updated document
-    );
+    const normalizedHelperId = String(helperId || 'helper').trim() || 'helper';
+    const normalizedHelperMessage = String(helperMessage || '').trim();
+
+    const request = await HelpRequest.findById(id);
 
     if (!request) {
       return res.status(404).json({ message: 'Help request not found' });
     }
+
+    request.status = 'Accepted';
+    request.helperId = normalizedHelperId;
+    request.helperMessage = normalizedHelperMessage;
+
+    // Keep chat history consistent by mirroring first helper response into messages.
+    if (normalizedHelperMessage) {
+      const alreadyExists = Array.isArray(request.messages)
+        && request.messages.some((message) => {
+          return (
+            String(message.senderId || '').trim().toLowerCase() === normalizedHelperId.toLowerCase()
+            && String(message.text || '').trim() === normalizedHelperMessage
+          );
+        });
+
+      if (!alreadyExists) {
+        request.messages.push({
+          senderId: normalizedHelperId,
+          senderName: normalizedHelperId,
+          text: normalizedHelperMessage,
+          createdAt: new Date(),
+        });
+      }
+    }
+
+    request.updatedAt = Date.now();
+    await request.save();
 
     res.status(200).json({ message: 'Response submitted', data: request });
   } catch (error) {

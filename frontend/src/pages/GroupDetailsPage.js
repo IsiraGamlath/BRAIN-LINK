@@ -8,9 +8,10 @@ import LeaveConfirmationModal from "../components/LeaveConfirmationModal";
 
 const API_BASE = "http://localhost:5000/api";
 
-function GroupDetailsPage({ currentUser }) {
+function GroupDetailsPage({ currentUser, selectedGroupId, onBackToProjectGroup }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const resolvedGroupId = selectedGroupId || id;
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -24,10 +25,24 @@ function GroupDetailsPage({ currentUser }) {
   const setError = (text) => setFlashMessage({ type: "error", text });
   const setSuccess = (text) => setFlashMessage({ type: "success", text });
 
+  const navigateBack = useCallback(() => {
+    if (typeof onBackToProjectGroup === "function") {
+      onBackToProjectGroup();
+      return;
+    }
+
+    navigate("/project-group-hub", { replace: true });
+  }, [navigate, onBackToProjectGroup]);
+
   const fetchGroup = useCallback(async () => {
+    if (!resolvedGroupId) {
+      setGroup(null);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/groups/${id}`);
+      const response = await axios.get(`${API_BASE}/groups/${resolvedGroupId}`);
       setGroup(response.data?.group || null);
     } catch (error) {
       setError(error?.response?.data?.message || "Failed to load group details.");
@@ -35,7 +50,7 @@ function GroupDetailsPage({ currentUser }) {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [resolvedGroupId]);
 
   useEffect(() => {
     fetchGroup();
@@ -106,7 +121,7 @@ function GroupDetailsPage({ currentUser }) {
       setSuccess("You have left this group.");
       setShowLeaveModal(false);
       await fetchGroup();
-      navigate("/project-group-hub", { replace: true });
+      navigateBack();
     } catch (error) {
       setError(error?.response?.data?.message || "Unable to leave group.");
     } finally {
@@ -126,7 +141,7 @@ function GroupDetailsPage({ currentUser }) {
       });
       setSuccess("Group deleted successfully");
       setShowDeleteConfirm(false);
-      navigate("/project-group-hub", { replace: true });
+      navigateBack();
     } catch (error) {
       setError(error?.response?.data?.message || "Unable to delete group.");
     } finally {
@@ -193,7 +208,9 @@ function GroupDetailsPage({ currentUser }) {
   return (
     <div className="group-details-page">
       <div className="group-details-header">
-        <button className="details-back" onClick={() => navigate("/project-group-hub")}>Back to Hub</button>
+        <button className="details-back" onClick={navigateBack}>
+          {typeof onBackToProjectGroup === "function" ? "Back to My Project Group" : "Back to Hub"}
+        </button>
         <div className="details-header-right">
           <StatusBadge status={group.status} />
           <span className="details-role">{relationship === "leader" ? "Leader" : relationship === "member" ? "Member" : "Non-member"}</span>

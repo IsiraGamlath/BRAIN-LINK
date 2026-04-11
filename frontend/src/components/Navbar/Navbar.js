@@ -76,7 +76,7 @@ const Navbar = ({ darkMode, toggleDark }) => {
                 </>
               ) : (
                 <>
-                  <Link to="/user-dashboard" className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>User Dashboard</Link>
+                  <Link to="/profile" className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>User Profile</Link>
                   <Link to="/resources"      className="btn btn--ghost" style={{ fontSize: '0.8rem' }}>Resources</Link>
                 </>
               )}
@@ -132,7 +132,7 @@ const Navbar = ({ darkMode, toggleDark }) => {
                 </>
               ) : (
                 <>
-                  <Link to="/user-dashboard" className="btn btn--ghost" onClick={() => setMenuOpen(false)}>User Dashboard</Link>
+                  <Link to="/profile" className="btn btn--ghost" onClick={() => setMenuOpen(false)}>User Profile</Link>
                   <Link to="/resources"      className="btn btn--ghost" onClick={() => setMenuOpen(false)}>Resources</Link>
                 </>
               )}

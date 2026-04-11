@@ -103,7 +103,7 @@ export default function Register() {
         password:       form.password,
         confirmPassword: form.confirmPassword
       });
-      toast.success(`Account created! Welcome, ${user.fullName}! 🎉`);
+      toast.success(`Account created! Welcome, ${user.fullName}!`);
       navigate('/project-group-hub', { replace: true });
     } catch (err) {
       setAlert({ type: 'error', text: err.message || 'Registration failed' });
@@ -161,15 +161,12 @@ export default function Register() {
                 : 'Step 2 of 2 — Secure your account'}
             </p>
             {/* Step indicator */}
-            <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <div className="auth-step-meter">
               {[1, 2].map(s => (
-                <div key={s} style={{
-                  flex: 1, height: 4, borderRadius: 2,
-                  background: s <= step
-                    ? 'linear-gradient(90deg,#6366f1,#8b5cf6)'
-                    : 'rgba(255,255,255,0.08)',
-                  transition: 'background 0.4s'
-                }} />
+                <div
+                  key={s}
+                  className={`auth-step-segment ${s <= step ? 'auth-step-segment--active' : ''}`}
+                />
               ))}
             </div>
           </div>
@@ -344,10 +341,10 @@ export default function Register() {
                 {errors.confirmPassword && <p className="form-error">⚠ {errors.confirmPassword}</p>}
               </div>
 
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div className="auth-form-actions">
                 <button
-                  type="button" className="btn-auth"
-                  style={{ background: 'rgba(255,255,255,0.07)', boxShadow: 'none', flex: '0 0 auto', width: 'auto', padding: '14px 20px' }}
+                  type="button"
+                  className="btn-auth btn-auth-secondary"
                   onClick={() => setStep(1)}
                 >
                   ← Back
@@ -356,9 +353,8 @@ export default function Register() {
                 <button
                   id="btn-register-submit"
                   type="submit"
-                  className={`btn-auth${loading ? ' btn-auth--loading' : ''}`}
+                  className={`btn-auth btn-auth-grow${loading ? ' btn-auth--loading' : ''}`}
                   disabled={loading}
-                  style={{ flex: 1 }}
                 >
                   {loading ? <><div className="btn-spinner" /> Creating account…</> : '🚀 Create Account'}
                 </button>

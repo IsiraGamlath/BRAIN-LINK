@@ -4,6 +4,8 @@ const User     = require('../../model/User-Management/User');
 const Resource = require('../../model/Resource-Management/Resource');
 const Report   = require('../../model/Admin-Moderation/Report');
 const AuditLog = require('../../model/Admin-Moderation/AuditLog');
+const Group    = require('../../model/Group');
+const Session  = require('../../model/SessionModel');
 
 // ─── GET /api/admin/analytics ────────────────────────────────────────────────
 const getAnalytics = asyncHandler(async (req, res) => {
@@ -13,6 +15,8 @@ const getAnalytics = asyncHandler(async (req, res) => {
     totalUsers,
     activeUsers24h,
     totalResources,
+    totalStudyGroups,
+    totalKuppiSessions,
     reportCounts,
     topUploaders,
     popularResources
@@ -20,6 +24,8 @@ const getAnalytics = asyncHandler(async (req, res) => {
     User.countDocuments({ isActive: true }),
     User.countDocuments({ lastLogin: { $gte: last24h } }),
     Resource.countDocuments({ isDeleted: false }),
+    Group.countDocuments({}),
+    Session.countDocuments({}),
     Report.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     Resource.aggregate([
       { $match: { isDeleted: false } },
@@ -55,8 +61,8 @@ const getAnalytics = asyncHandler(async (req, res) => {
       totalUsers,
       activeUsers24h,
       totalResources,
-      totalStudyGroups: 0,
-      totalKuppiSessions: 0,
+      totalStudyGroups,
+      totalKuppiSessions,
       reports,
       topUploaders,
       popularResources,

@@ -1,13 +1,12 @@
 import React from "react";
 import "./TabNavigation.css";
 
-function TabNavigation({ activeTab, onTabChange, notificationCount }) {
+function TabNavigation({ activeTab, onTabChange }) {
   const tabs = [
     { id: "overview", label: "Overview", icon: "📊" },
     { id: "create", label: "Create Project Group", icon: "🧩" },
     { id: "my-group", label: "My Project Group", icon: "🏆" },
     { id: "pending-requests", label: "Pending Requests", icon: "📋" },
-    { id: "notifications", label: "Notifications", icon: "🔔", badge: notificationCount },
   ];
 
   return (

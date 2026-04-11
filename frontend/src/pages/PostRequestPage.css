@@ -1,0 +1,193 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Sora:wght@400;600;700&display=swap");
+
+.help-request-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100%;
+  padding: 22px 20px 34px;
+  color: #0a172c;
+  font-family: "Sora", "Trebuchet MS", sans-serif;
+}
+
+.help-request-page::before,
+.help-request-page::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.help-request-page::before {
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  top: -120px;
+  left: -90px;
+  background: radial-gradient(circle at 35% 30%, rgba(61, 142, 184, 0.22), rgba(61, 142, 184, 0));
+}
+
+.help-request-page::after {
+  width: 330px;
+  height: 330px;
+  border-radius: 45% 55% 40% 60%;
+  right: -80px;
+  bottom: -120px;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 210, 139, 0.24), rgba(255, 210, 139, 0));
+}
+
+.help-request-shell {
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+}
+
+.help-request-form-wrap {
+  width: min(780px, 100%);
+  margin: 0 auto;
+}
+
+.help-request-hero {
+  border: 1px solid #dce8f2;
+  border-radius: 22px;
+  background: linear-gradient(155deg, #ffffff 0%, #f7fbff 100%);
+  box-shadow: 0 14px 22px rgba(13, 54, 80, 0.06);
+  padding: 20px;
+}
+
+.help-request-kicker {
+  margin: 0;
+  color: #567193;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.help-request-hero h1 {
+  margin: 8px 0 0;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(1.5rem, 2.3vw, 2.4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.help-request-hero p {
+  margin: 8px 0 0;
+  color: #526780;
+  font-size: 0.95rem;
+}
+
+.help-request-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(280px, 1fr);
+  gap: 16px;
+}
+
+.help-request-form-pane {
+  min-width: 0;
+}
+
+.help-request-feed-pane {
+  border: 1px solid #dce8f2;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 14px 22px rgba(13, 54, 80, 0.06);
+  padding: 18px;
+  height: fit-content;
+  position: sticky;
+  top: 14px;
+}
+
+.help-request-feed-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.help-request-feed-pane h3 {
+  margin: 0;
+  color: #0f223d;
+  font-family: "Manrope", sans-serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.help-request-feed-count {
+  min-width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: #ddeef7;
+  color: #29506e;
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+}
+
+.help-request-feed-note {
+  margin: 10px 0 0;
+  color: #4f6986;
+  font-size: 0.79rem;
+  line-height: 1.4;
+}
+
+.help-request-feed-grid {
+  margin-top: 14px;
+  display: grid;
+  gap: 12px;
+  max-height: 68vh;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.help-request-feed-state,
+.help-request-feed-error,
+.help-request-feed-empty {
+  margin: 14px 0 0;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.help-request-feed-state,
+.help-request-feed-empty {
+  border: 1px solid #dbe8f3;
+  color: #3c5876;
+  background: #f5f9fc;
+}
+
+.help-request-feed-error {
+  border: 1px solid #f0c7ca;
+  color: #8b1f2a;
+  background: #fff3f4;
+}
+
+@media (max-width: 980px) {
+  .help-request-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .help-request-feed-pane {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .help-request-page {
+    padding: 16px 12px 24px;
+  }
+
+  .help-request-hero,
+  .help-request-form-wrap {
+    border-radius: 16px;
+    padding: 14px;
+  }
+
+  .help-request-feed-grid {
+    max-height: none;
+  }
+}

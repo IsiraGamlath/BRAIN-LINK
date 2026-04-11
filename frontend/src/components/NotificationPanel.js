@@ -1,7 +1,13 @@
 import React from "react";
 import "./NotificationPanel.css";
 
-function NotificationPanel({ notifications, isOpen, onClose, onMarkAsRead }) {
+function NotificationPanel({
+  notifications,
+  isOpen,
+  onClose,
+  onMarkAsRead,
+  onNotificationClick,
+}) {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
@@ -21,7 +27,9 @@ function NotificationPanel({ notifications, isOpen, onClose, onMarkAsRead }) {
             <div className="notification-empty">
               <div className="notification-empty-icon">🔔</div>
               <p>No notifications yet</p>
-              <p className="notification-empty-hint">Join requests will appear here</p>
+              <p className="notification-empty-hint">
+                Incoming chat, help, and Kuppi session updates will appear here
+              </p>
             </div>
           ) : (
             <div className="notification-list">
@@ -29,14 +37,20 @@ function NotificationPanel({ notifications, isOpen, onClose, onMarkAsRead }) {
                 <div
                   key={notification.id}
                   className={`notification-item ${!notification.read ? "notification-unread" : ""}`}
+                  onClick={() => onNotificationClick?.(notification)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onNotificationClick?.(notification);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className="notification-item-content">
-                    <div className="notification-item-icon">👤</div>
+                    <div className="notification-item-icon">{notification.icon || "💬"}</div>
                     <div className="notification-item-text">
-                      <p className="notification-item-message">
-                        <strong>{notification.studentName}</strong> requested to join{" "}
-                        <strong>{notification.groupName}</strong>
-                      </p>
+                      <p className="notification-item-message">{notification.message}</p>
                       <p className="notification-item-time">
                         {new Date(notification.timestamp).toLocaleDateString()}{" "}
                         {new Date(notification.timestamp).toLocaleTimeString([], {
@@ -49,7 +63,10 @@ function NotificationPanel({ notifications, isOpen, onClose, onMarkAsRead }) {
                   {!notification.read && (
                     <button
                       className="notification-mark-read"
-                      onClick={() => onMarkAsRead(notification.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onMarkAsRead(notification.id);
+                      }}
                       title="Mark as read"
                     >
                       ✓
@@ -59,12 +76,6 @@ function NotificationPanel({ notifications, isOpen, onClose, onMarkAsRead }) {
               ))}
             </div>
           )}
-        </div>
-
-        <div className="notification-panel-footer">
-          <button onClick={onClose} className="notification-footer-link">
-            View all pending requests →
-          </button>
         </div>
       </div>
     </>

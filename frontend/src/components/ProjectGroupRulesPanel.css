@@ -1,16 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Sora:wght@400;500;600;700&display=swap");
+
 .rules-panel {
-  border-radius: 14px;
-  border: 1px solid #dbe6f6;
-  background: linear-gradient(180deg, #f9fcff 0%, #f3f8ff 100%);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-  padding: 22px;
+  border-radius: 20px;
+  border: 1px solid #d4e3ee;
+  background: linear-gradient(162deg, #ffffff 0%, #f6fbff 66%, #fff8eb 100%);
+  box-shadow: 0 10px 24px rgba(16, 58, 88, 0.07);
+  padding: 20px;
+  font-family: "Sora", "Trebuchet MS", sans-serif;
 }
 
 .rules-panel-title {
   margin: 0 0 14px;
-  font-size: 20px;
+  font-family: "Manrope", sans-serif;
+  font-size: 1.2rem;
   font-weight: 800;
-  color: #0f172a;
+  color: #10263f;
 }
 
 .rules-panel-list {
@@ -19,34 +23,35 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .rules-panel-item {
   display: flex;
   align-items: flex-start;
-  gap: 11px;
-  color: #334155;
-  font-size: 14px;
-  line-height: 1.55;
+  gap: 10px;
+  color: #35516d;
+  font-size: 0.84rem;
+  line-height: 1.58;
   padding: 10px 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid #e2ebf8;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #deebf4;
 }
 
 .rules-panel-icon {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #e0ecff;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
+  background: #eaf4fb;
+  color: #2f6a8a;
+  border: 1px solid #bfd5e4;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 800;
   flex-shrink: 0;
   margin-top: 1px;
 }

@@ -2,8 +2,10 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   fetchAllSessions,
   getCurrentStudentId,
-  getCurrentUserIdentifiers
+  getCurrentUserIdentifiers,
+  joinSession
 } from '../api/sessionApi';
+import '../KuppiSessions.css';
 
 function KuppiSessionsList() {
   const [sessions, setSessionsList] = useState([]);
@@ -13,6 +15,7 @@ function KuppiSessionsList() {
   const [searchSubject, setSearchSubject] = useState('');
   const [filterDate, setFilterDate] = useState('');
   const [joinedSessions, setJoinedSessions] = useState(new Set());
+  const [joiningSessionId, setJoiningSessionId] = useState('');
   const currentStudentId = useMemo(() => getCurrentStudentId() || 'Guest', []);
   const currentIdentifierSet = useMemo(
     () => new Set(getCurrentUserIdentifiers().map((id) => String(id || '').trim().toLowerCase())),
@@ -62,10 +65,26 @@ function KuppiSessionsList() {
     applyFilters();
   }, [applyFilters]);
 
-  const handleJoinSession = (sessionId) => {
-    const newJoined = new Set(joinedSessions);
-    newJoined.add(sessionId);
-    setJoinedSessions(newJoined);
+  const handleJoinSession = async (sessionId) => {
+    try {
+      setError(null);
+      setJoiningSessionId(sessionId);
+
+      await joinSession(sessionId, currentStudentId);
+
+      setJoinedSessions((prev) => {
+        const next = new Set(prev);
+        next.add(sessionId);
+        return next;
+      });
+
+      await fetchSessions();
+    } catch (err) {
+      const message = err?.response?.data?.message || 'Failed to join session. Please try again later.';
+      setError(message);
+    } finally {
+      setJoiningSessionId('');
+    }
   };
 
   const isStudentJoined = (session) => {
@@ -98,173 +117,162 @@ function KuppiSessionsList() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-full">
-      <div className="bg-gradient-to-r from-brand to-brand-light text-white py-8 px-4 shadow-xl">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl font-bold mb-2">Kuppi Sessions</h1>
-          <p className="text-lg mb-1">Browse and join study sessions with your peers</p>
-          <small className="opacity-90">Logged in as: {currentStudentId}</small>
-        </div>
-      </div>
-
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-3 gap-4 mb-6">
+    <section className="kuppi-fresh-page">
+      <div className="kuppi-fresh-wrap">
+        <header className="kuppi-fresh-header">
           <div>
-            <label className="label block mb-2">Search by Subject</label>
-            <input
-              className="input-field"
-              type="text"
-              placeholder="e.g., Mathematics, Programming..."
-              value={searchSubject}
-              onChange={(e) => setSearchSubject(e.target.value)}
-            />
+            <p className="kuppi-fresh-kicker">Kuppi Workspace</p>
+            <h1>Browse Sessions</h1>
+            <p>Discover scheduled peer-learning sessions and join what fits your goals.</p>
+            <small>Logged in as: {currentStudentId}</small>
           </div>
+        </header>
 
-          <div>
-            <label className="label block mb-2">Filter by Date</label>
-            <input
-              className="input-field"
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-            />
-          </div>
-
-          {filterDate && (
-            <div className="flex items-end">
-              <button
-                type="button"
-                className="btn-outline px-4 py-2 w-full"
-                onClick={() => setFilterDate('')}
-              >
-                Clear Date
-              </button>
+        <section className="kuppi-fresh-panel kuppi-fresh-filter-panel">
+          <div className="kuppi-fresh-form-grid kuppi-fresh-form-grid--filters">
+            <div className="kuppi-fresh-field">
+              <label className="kuppi-fresh-label">Search by Subject</label>
+              <input
+                className="kuppi-fresh-input"
+                type="text"
+                placeholder="e.g., Mathematics, Programming"
+                value={searchSubject}
+                onChange={(e) => setSearchSubject(e.target.value)}
+              />
             </div>
-          )}
-        </div>
 
-        {error && <div className="alert-error">{error}</div>}
+            <div className="kuppi-fresh-field">
+              <label className="kuppi-fresh-label">Filter by Date</label>
+              <input
+                className="kuppi-fresh-input"
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              />
+            </div>
 
-        {loading && <p className="text-center text-gray-600 py-8">Loading sessions...</p>}
+            {filterDate && (
+              <div className="kuppi-fresh-field kuppi-fresh-field--actions">
+                <label className="kuppi-fresh-label">Reset</label>
+                <button
+                  type="button"
+                  className="kuppi-fresh-ghost-btn"
+                  onClick={() => setFilterDate('')}
+                >
+                  Clear Date
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {error && <div className="kuppi-fresh-alert is-error">{error}</div>}
+
+        {loading && <p className="kuppi-fresh-state">Loading sessions...</p>}
 
         {!loading && filteredSessions.length === 0 ? (
-          <p className="text-center text-gray-500 py-8 text-lg">
+          <p className="kuppi-fresh-state is-muted">
             {sessions.length === 0 ? 'No sessions available yet.' : 'No sessions match your search criteria.'}
           </p>
         ) : null}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredSessions.map((session) => {
-            const isJoined = isStudentJoined(session) || joinedSessions.has(session._id);
-            const showJoinButton = canJoin(session);
-            const isOwned = isOwnedByCurrentUser(session);
-            const participantCount = Array.isArray(session.participants) ? session.participants.length : 0;
+        {!loading && filteredSessions.length > 0 ? (
+          <div className="kuppi-fresh-session-grid">
+            {filteredSessions.map((session) => {
+              const isJoined = isStudentJoined(session) || joinedSessions.has(session._id);
+              const showJoinButton = canJoin(session);
+              const isOwned = isOwnedByCurrentUser(session);
+              const participantCount = Array.isArray(session.participants) ? session.participants.length : 0;
+              const normalizedStatus = String(session.status || 'Booked').trim().toLowerCase();
 
-            return (
-              <div
-                key={session._id}
-                className="bg-white border-2 border-blue-100 rounded-2xl shadow-brand overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-accent-blue"
-              >
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 flex justify-between items-start gap-3 border-b border-blue-200">
-                  <h2 className="font-bold text-brand flex-1">{session.subject || 'Untitled Session'}</h2>
-                  <span
-                    className={`text-xs font-bold px-2 py-1 rounded-full whitespace-nowrap ${
-                      session.status === 'Booked'
-                        ? 'bg-blue-100 text-accent-blue border border-blue-300'
-                        : session.status === 'Cancelled'
-                        ? 'bg-red-100 text-red-700 border border-red-300'
-                        : 'bg-green-100 text-green-700 border border-green-300'
-                    }`}
-                  >
-                    {session.status === 'Booked' ? 'Scheduled' : session.status || 'Scheduled'}
-                  </span>
-                </div>
-
-                <div className="px-4 py-3 space-y-2">
-                  <div className="flex justify-between">
-                    <strong className="text-brand">Date:</strong>
-                    <span>{formatDate(session.date)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <strong className="text-brand">Time:</strong>
-                    <span>{formatTime(session.startTime)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <strong className="text-brand">Mode:</strong>
-                    <span>{session.mode || '-'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <strong className="text-brand">Host:</strong>
-                    <span>{isOwned ? 'You' : session.studentId || 'Unknown'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <strong className="text-brand">Participants:</strong>
-                    <span>{participantCount}</span>
+              return (
+                <article key={session._id} className="kuppi-fresh-card kuppi-fresh-card--browse">
+                  <div className="kuppi-fresh-card-head">
+                    <h2 className="kuppi-fresh-card-title">{session.subject || 'Untitled Session'}</h2>
+                    <span className={`kuppi-fresh-status kuppi-fresh-status--${normalizedStatus}`}>
+                      {session.status === 'Booked' ? 'Scheduled' : session.status || 'Scheduled'}
+                    </span>
                   </div>
 
-                  {session.mode === 'Physical' ? (
-                    <div className="flex justify-between">
-                      <strong className="text-brand">Location:</strong>
-                      <span>{session.location || 'TBA'}</span>
+                  <div className="kuppi-fresh-detail-list">
+                    <div className="kuppi-fresh-detail-row">
+                      <strong>Date</strong>
+                      <span>{formatDate(session.date)}</span>
                     </div>
-                  ) : null}
-
-                  {session.mode === 'Online' ? (
-                    <div className="flex justify-between items-start gap-2">
-                      <strong className="text-brand">Meeting:</strong>
-                      {isJoined ? (
-                        <a
-                          href={session.meetingLink || '#'}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-accent-blue font-semibold hover:bg-blue-100 px-2 py-1 rounded"
-                        >
-                          Join Meeting
-                        </a>
-                      ) : (
-                        <span className="text-gray-500 italic">Join to access link</span>
-                      )}
+                    <div className="kuppi-fresh-detail-row">
+                      <strong>Time</strong>
+                      <span>{formatTime(session.startTime)}</span>
                     </div>
-                  ) : null}
-                </div>
+                    <div className="kuppi-fresh-detail-row">
+                      <strong>Mode</strong>
+                      <span>{session.mode || '-'}</span>
+                    </div>
+                    <div className="kuppi-fresh-detail-row">
+                      <strong>Host</strong>
+                      <span>{isOwned ? 'You' : session.studentId || 'Unknown'}</span>
+                    </div>
+                    <div className="kuppi-fresh-detail-row">
+                      <strong>Participants</strong>
+                      <span>{participantCount}</span>
+                    </div>
 
-                <div className="px-4 py-3 border-t border-blue-100 flex gap-2">
-                  {showJoinButton ? (
-                    <button
-                      type="button"
-                      className="btn-primary flex-1 py-2 text-sm"
-                      onClick={() => handleJoinSession(session._id)}
-                    >
-                      Join Session
-                    </button>
-                  ) : isOwned ? (
-                    <span className="flex-1 bg-blue-100 text-accent-blue border border-blue-300 rounded-lg py-2 text-center font-semibold text-sm">
-                      Your Session
-                    </span>
-                  ) : isJoined ? (
-                    <span className="flex-1 bg-green-100 text-green-800 border border-green-300 rounded-lg py-2 text-center font-semibold text-sm">
-                      ✓ Joined
-                    </span>
-                  ) : null}
+                    {session.mode === 'Physical' ? (
+                      <div className="kuppi-fresh-detail-row">
+                        <strong>Location</strong>
+                        <span>{session.location || 'TBA'}</span>
+                      </div>
+                    ) : null}
 
-                  {session.status === 'Cancelled' && !isJoined ? (
-                    <span className="flex-1 bg-red-100 text-red-800 border border-red-300 rounded-lg py-2 text-center font-semibold text-sm">
-                      Cancelled
-                    </span>
-                  ) : null}
+                    {session.mode === 'Online' ? (
+                      <div className="kuppi-fresh-detail-row">
+                        <strong>Meeting</strong>
+                        {isJoined ? (
+                          <a
+                            href={session.meetingLink || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="kuppi-fresh-link"
+                          >
+                            Join Meeting
+                          </a>
+                        ) : (
+                          <span className="kuppi-fresh-hint">Join to access link</span>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
 
-                  {session.status === 'Completed' && !isJoined ? (
-                    <span className="flex-1 bg-green-100 text-green-800 border border-green-300 rounded-lg py-2 text-center font-semibold text-sm">
-                      Completed
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </main>
-    </div>
+                  <div className="kuppi-fresh-card-actions">
+                    {showJoinButton ? (
+                      <button
+                        type="button"
+                        className="kuppi-fresh-primary-btn kuppi-fresh-btn-sm"
+                        disabled={joiningSessionId === session._id}
+                        onClick={() => handleJoinSession(session._id)}
+                      >
+                        {joiningSessionId === session._id ? 'Joining...' : 'Join Session'}
+                      </button>
+                    ) : isOwned ? (
+                      <span className="kuppi-fresh-static-pill is-owned">Your Session</span>
+                    ) : isJoined ? (
+                      <span className="kuppi-fresh-static-pill is-joined">Joined</span>
+                    ) : null}
+
+                    {session.status === 'Cancelled' && !isJoined ? (
+                      <span className="kuppi-fresh-static-pill is-cancelled">Cancelled</span>
+                    ) : null}
+
+                    {session.status === 'Completed' && !isJoined ? (
+                      <span className="kuppi-fresh-static-pill is-completed">Completed</span>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }
 

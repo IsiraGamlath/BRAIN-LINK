@@ -11,6 +11,7 @@ import TestingUserSwitcher from "../components/TestingUserSwitcher";
 import ProjectGroupRulesPanel from "../components/ProjectGroupRulesPanel";
 import StatusBadge from "../components/StatusBadge";
 import TabNavigation from "../components/TabNavigation";
+import CreateProjectGroupPage from "./CreateProjectGroupPage";
 import { isProfileComplete } from "../utils/profileHelpers";
 
 const API_BASE = "http://localhost:5000/api";
@@ -45,9 +46,6 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
     status: "All",
     view: "All Groups",
   });
-
-  // Notifications state
-  const [leaderNotifications, setLeaderNotifications] = useState([]);
 
   const setSuccess = (text) => setFlashMessage({ type: "success", text });
   const setError = (text) => setFlashMessage({ type: "error", text });
@@ -98,8 +96,6 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
 
       if (leaderGroups.length === 0) {
         setPendingRequestsByGroup({});
-        setLeaderNotifications([]);
-        onSetNotifications([]);
         return;
       }
 
@@ -113,37 +109,19 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
         );
 
         const mappedRequests = {};
-        const notifications = [];
 
         leaderGroups.forEach((group, index) => {
           const groupRequests = responses[index].data?.requests || [];
           mappedRequests[group._id] = groupRequests;
-
-          // Generate notifications from pending requests
-          groupRequests.forEach((request) => {
-            if (request.status === "Pending") {
-              notifications.push({
-                id: `${group._id}-${request._id}`,
-                groupId: group._id,
-                groupName: group.groupName,
-                studentName: request.studentItNumber,
-                requestId: request._id,
-                timestamp: request.createdAt,
-                read: false,
-              });
-            }
-          });
         });
 
         setPendingRequestsByGroup(mappedRequests);
-        setLeaderNotifications(notifications);
-        onSetNotifications(notifications);
       } catch (error) {
         const message = error?.response?.data?.message || "Failed to load pending requests.";
         setError(message);
       }
     },
-    [currentUser.itNumber, onSetNotifications]
+    [currentUser.itNumber]
   );
 
   // Initial data fetch
@@ -157,10 +135,8 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
       fetchLeaderRequests(groups);
     } else {
       setPendingRequestsByGroup({});
-      setLeaderNotifications([]);
-      onSetNotifications([]);
     }
-  }, [groups, fetchLeaderRequests, onSetNotifications]);
+  }, [groups, fetchLeaderRequests]);
 
   useEffect(() => {
     let filtered = [...groups];
@@ -227,11 +203,26 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
   }, [flashMessage]);
 
   useEffect(() => {
-    if (!location.state?.flashMessage) {
+    const flashMessageFromState = location.state?.flashMessage;
+    const activeTabFromState = location.state?.activeTab;
+    const validTabs = ["overview", "create", "my-group", "pending-requests"];
+
+    if (!flashMessageFromState && !activeTabFromState) {
       return;
     }
 
-    setFlashMessage(location.state.flashMessage);
+    if (flashMessageFromState) {
+      setFlashMessage(flashMessageFromState);
+    }
+
+    if (activeTabFromState) {
+      const nextTab = activeTabFromState === "notifications" ? "pending-requests" : activeTabFromState;
+
+      if (validTabs.includes(nextTab)) {
+        setActiveTab(nextTab);
+      }
+    }
+
     navigate(location.pathname, { replace: true, state: null });
   }, [location, navigate]);
 
@@ -359,6 +350,19 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
     }
   };
 
+  const handleCreateGroupTabCancel = useCallback(() => {
+    setActiveTab("overview");
+  }, []);
+
+  const handleCreateGroupTabCreated = useCallback(
+    async (result) => {
+      setSuccess(result?.text || "Project group created successfully.");
+      await Promise.all([fetchGroups(), fetchMyPendingRequests()]);
+      setActiveTab("overview");
+    },
+    [fetchGroups, fetchMyPendingRequests]
+  );
+
   // Tab content renderers
   const renderOverviewTab = () => (
     <>
@@ -395,9 +399,9 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
 
           <button
             className={`btn-create-group ${!profileComplete ? "btn-disabled" : ""}`}
-            onClick={() => navigate("/create-project-group")}
+            onClick={() => setActiveTab("create")}
             disabled={!profileComplete}
-            title={!profileComplete ? profileIncompleteMessage : "Create a new project group"}
+            title={!profileComplete ? profileIncompleteMessage : "Open Create Project Group form"}
           >
             Create New Project Group
           </button>
@@ -451,36 +455,12 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
 
   const renderCreateTab = () => (
     <div className="tab-content-wrapper">
-      <div className="tab-section-card">
-        <h2 className="section-title">Create a New Project Group</h2>
-        <p className="section-description">
-          Fill in the details below to create a new project group for your assignment or project.
-        </p>
-
-        {!profileComplete && (
-          <div className="profile-warning-banner">
-            <div className="warning-icon">⚠️</div>
-            <div className="warning-content">
-              <h3 className="warning-title">Complete Your Academic Profile First</h3>
-              <p className="warning-message">
-                {profileIncompleteMessage} Click the "Edit Academic Profile" button in the header
-                to get started.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <button
-          className={`btn-navigate-page ${!profileComplete ? "btn-disabled" : ""}`}
-          onClick={() => navigate("/create-project-group")}
-          disabled={!profileComplete}
-          title={!profileComplete ? profileIncompleteMessage : "Go to Create Project Group page"}
-        >
-          📄 Open Create Project Group Form
-        </button>
-
-        <ProjectGroupRulesPanel />
-      </div>
+      <CreateProjectGroupPage
+        currentUser={currentUser}
+        embedded
+        onCancel={handleCreateGroupTabCancel}
+        onCreated={handleCreateGroupTabCreated}
+      />
     </div>
   );
 
@@ -610,56 +590,6 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
     );
   };
 
-  const renderNotificationsTab = () => (
-    <div className="tab-content-wrapper">
-      <div className="notifications-section">
-        <h2 className="section-title">Notifications ({leaderNotifications.length})</h2>
-
-        {leaderNotifications.length === 0 ? (
-          <div className="empty-groups-state">
-            <div className="empty-groups-icon">🔔</div>
-            <h3>No notifications yet</h3>
-            <p>You'll receive notifications when someone requests to join your group.</p>
-          </div>
-        ) : (
-          <div className="notifications-list">
-            {leaderNotifications.map((notif) => (
-              <div key={notif.id} className="notification-list-item">
-                <div className="notification-list-icon">👤</div>
-                <div className="notification-list-content">
-                  <p className="notification-list-message">
-                    <strong>{notif.studentName}</strong> requested to join{" "}
-                    <strong>{notif.groupName}</strong>
-                  </p>
-                  <p className="notification-list-time">
-                    {new Date(notif.timestamp).toLocaleDateString()}{" "}
-                    {new Date(notif.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-                <button
-                  className="notification-list-action"
-                  onClick={() => setActiveTab("pending-requests")}
-                  title="Go to Pending Requests"
-                >
-                  View →
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <div className="notifications-footer">
-          <p className="notifications-hint">
-            Manage all requests in the Pending Requests tab to accept or reject them.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="dashboard">
       <div className="dashboard-header">
@@ -683,7 +613,6 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
         <TabNavigation
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          notificationCount={leaderNotifications.filter((n) => !n.read).length}
         />
 
         <div className="tab-content">
@@ -691,7 +620,6 @@ function StudyGroupDashboard({ currentUser, onAddNotification, onSetNotification
           {activeTab === "create" && renderCreateTab()}
           {activeTab === "my-group" && renderMyGroupTab()}
           {activeTab === "pending-requests" && renderPendingRequestsTab()}
-          {activeTab === "notifications" && renderNotificationsTab()}
         </div>
       </div>
 

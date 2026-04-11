@@ -14,7 +14,7 @@ const MODULE_OPTIONS = [
   "ESD",
 ];
 
-function CreateProjectGroupPage({ currentUser }) {
+function CreateProjectGroupPage({ currentUser, onCancel, onCreated, embedded = false }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     moduleName: "",
@@ -122,6 +122,14 @@ function CreateProjectGroupPage({ currentUser }) {
         itNumber: currentUser.itNumber,
       });
 
+      if (typeof onCreated === "function") {
+        onCreated({
+          type: "success",
+          text: "Project group created successfully.",
+        });
+        return;
+      }
+
       navigate("/project-group-hub", {
         replace: true,
         state: {
@@ -140,7 +148,7 @@ function CreateProjectGroupPage({ currentUser }) {
   };
 
   return (
-    <div className="create-page">
+    <div className={`create-page ${embedded ? "create-page-embedded" : ""}`}>
       <div className="create-page-header">
         <h1>Create Project Group</h1>
         <p>Build your group with clear structure and module-focused collaboration.</p>
@@ -253,7 +261,18 @@ function CreateProjectGroupPage({ currentUser }) {
             </div>
 
             <div className="create-page-actions">
-              <button type="button" className="btn-secondary" onClick={() => navigate("/project-group-hub")}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  if (typeof onCancel === "function") {
+                    onCancel();
+                    return;
+                  }
+
+                  navigate("/project-group-hub");
+                }}
+              >
                 Cancel
               </button>
               <button type="submit" disabled={loading || !isFormValid || !profileComplete} className="btn-primary">

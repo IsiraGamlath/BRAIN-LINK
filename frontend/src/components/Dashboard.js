@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import SessionCard from './SessionCard';
 import SessionForm from './SessionForm';
+import '../KuppiSessions.css';
 import {
   createSession,
   deleteSession,
@@ -17,6 +18,7 @@ function Dashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingSession, setEditingSession] = useState(null);
+  const [selectedSession, setSelectedSession] = useState(null);
   const [message, setMessage] = useState({ type: '', text: '' });
 
   const extractErrorMessage = (error, fallback) => {
@@ -46,6 +48,20 @@ function Dashboard() {
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
+
+  useEffect(() => {
+    if (!selectedSession?._id) {
+      return;
+    }
+
+    const refreshedSession = [...upcomingSessions, ...pastSessions].find(
+      (session) => session._id === selectedSession._id
+    );
+
+    if (refreshedSession) {
+      setSelectedSession(refreshedSession);
+    }
+  }, [upcomingSessions, pastSessions, selectedSession?._id]);
 
   const closeForm = () => {
     setShowForm(false);
@@ -92,22 +108,40 @@ function Dashboard() {
     }
   };
 
+  const handleViewDetails = (session) => {
+    setSelectedSession(session);
+  };
+
+  const closeDetails = () => {
+    setSelectedSession(null);
+  };
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) {
+      return '-';
+    }
+
+    return new Date(dateValue).toLocaleDateString();
+  };
+
+  const participants = Array.isArray(selectedSession?.participants)
+    ? selectedSession.participants.filter((participant) => String(participant || '').trim() !== '')
+    : [];
+
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 min-h-full">
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex justify-between items-start gap-4 mb-6">
+    <section className="kuppi-fresh-page">
+      <div className="kuppi-fresh-wrap">
+        <header className="kuppi-fresh-header">
           <div>
-            <h1 className="text-4xl font-bold text-brand mb-2">Kuppi Session Dashboard</h1>
-            <p className="text-gray-600 mb-1">Manage your upcoming and past sessions in one place.</p>
-            {currentUserId ? (
-              <small className="text-gray-500">Logged in as: {currentUserId}</small>
-            ) : (
-              <small className="text-gray-500">No user token found.</small>
-            )}
+            <p className="kuppi-fresh-kicker">Kuppi Workspace</p>
+            <h1>Kuppi Session Dashboard</h1>
+            <p>Manage your upcoming and completed sessions in one focused workspace.</p>
+            <small>{currentUserId ? `Logged in as: ${currentUserId}` : 'No user token found.'}</small>
           </div>
+
           <button
             type="button"
-            className="btn-primary px-6 py-3"
+            className="kuppi-fresh-primary-btn"
             onClick={() => {
               setEditingSession(null);
               setShowForm(true);
@@ -115,10 +149,12 @@ function Dashboard() {
           >
             Create New Session
           </button>
-        </div>
+        </header>
 
         {message.text && (
-          <div className={message.type === 'success' ? 'alert-success' : 'alert-error'}>{message.text}</div>
+          <div className={`kuppi-fresh-alert ${message.type === 'success' ? 'is-success' : 'is-error'}`}>
+            {message.text}
+          </div>
         )}
 
         {showForm && (
@@ -131,22 +167,86 @@ function Dashboard() {
           />
         )}
 
-        {loading && <p className="text-center text-gray-600 py-8">Loading sessions...</p>}
+        {selectedSession && (
+          <section className="kuppi-fresh-panel kuppi-session-detail-panel" aria-label="Selected session details">
+            <div className="kuppi-session-detail-head">
+              <h2 className="kuppi-fresh-panel-title">Session Details</h2>
+              <button type="button" className="kuppi-fresh-ghost-btn kuppi-fresh-btn-sm" onClick={closeDetails}>
+                Close
+              </button>
+            </div>
+
+            <div className="kuppi-session-detail-grid">
+              <div className="kuppi-session-detail-item">
+                <strong>Module</strong>
+                <span>{selectedSession.subject || '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Status</strong>
+                <span>{selectedSession.status || '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Date</strong>
+                <span>{formatDate(selectedSession.date)}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Start Time</strong>
+                <span>{selectedSession.startTime || '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Duration</strong>
+                <span>{selectedSession.duration ? `${selectedSession.duration} min` : '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Mode</strong>
+                <span>{selectedSession.mode || '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Creator IT Number</strong>
+                <span>{selectedSession.studentId || '-'}</span>
+              </div>
+              <div className="kuppi-session-detail-item">
+                <strong>Location</strong>
+                <span>{selectedSession.mode === 'Physical' ? selectedSession.location || '-' : 'N/A'}</span>
+              </div>
+              <div className="kuppi-session-detail-item kuppi-session-detail-item-wide">
+                <strong>Meeting Link</strong>
+                <span>{selectedSession.mode === 'Online' ? selectedSession.meetingLink || '-' : 'N/A'}</span>
+              </div>
+            </div>
+
+            <div className="kuppi-session-participants">
+              <h3>Joined Participants ({participants.length})</h3>
+              {participants.length === 0 ? (
+                <p className="kuppi-fresh-state is-muted">No participants joined yet.</p>
+              ) : (
+                <ul className="kuppi-session-participants-list">
+                  {participants.map((participant, index) => (
+                    <li key={`${participant}-${index}`}>{participant}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
+
+        {loading && <p className="kuppi-fresh-state">Loading sessions...</p>}
 
         {!loading && (
-          <div className="grid grid-cols-2 gap-6">
-            <section>
-              <h2 className="text-2xl font-bold text-brand mb-4">Upcoming Sessions</h2>
+          <div className="kuppi-fresh-sections">
+            <section className="kuppi-fresh-panel">
+              <h2 className="kuppi-fresh-panel-title">Upcoming Sessions</h2>
               {upcomingSessions.length === 0 ? (
-                <p className="text-gray-500">No upcoming sessions.</p>
+                <p className="kuppi-fresh-state is-muted">No upcoming sessions.</p>
               ) : (
-                <div className="grid gap-4">
+                <div className="kuppi-session-list">
                   {upcomingSessions.map((session) => (
                     <SessionCard
                       key={session._id}
                       session={session}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onViewDetails={handleViewDetails}
                       canManage={session.status !== 'Cancelled' && session.status !== 'Completed'}
                     />
                   ))}
@@ -154,18 +254,19 @@ function Dashboard() {
               )}
             </section>
 
-            <section>
-              <h2 className="text-2xl font-bold text-brand mb-4">Past Sessions</h2>
+            <section className="kuppi-fresh-panel">
+              <h2 className="kuppi-fresh-panel-title">Past Sessions</h2>
               {pastSessions.length === 0 ? (
-                <p className="text-gray-500">No past sessions.</p>
+                <p className="kuppi-fresh-state is-muted">No past sessions.</p>
               ) : (
-                <div className="grid gap-4">
+                <div className="kuppi-session-list">
                   {pastSessions.map((session) => (
                     <SessionCard
                       key={session._id}
                       session={session}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onViewDetails={handleViewDetails}
                       canManage={false}
                     />
                   ))}
@@ -174,8 +275,8 @@ function Dashboard() {
             </section>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </section>
   );
 }
 

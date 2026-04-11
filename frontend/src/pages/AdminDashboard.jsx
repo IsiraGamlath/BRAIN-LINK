@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  apiActivateUser,
+  apiAdminDeleteResource,
+  apiGetAdminResources,
+  apiGetAdminUsers,
+  apiGetAnalytics,
+  apiSuspendUser
+} from '../api/api';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -23,34 +31,47 @@ const AdminDashboard = () => {
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const loadAnalytics = async () => {
-    setLoading(true);
-    setAnalytics({
-      totalUsers: 120,
-      totalResources: 450,
-      totalStudyGroups: 27,
-      totalKuppiSessions: 338,
-      reports: { Pending: 6, Reviewed: 14, Resolved: 7, total: 27 }
-    });
-    setLoading(false);
+    try {
+      setLoading(true);
+      setError('');
+      const data = await apiGetAnalytics();
+      setAnalytics(data?.analytics || null);
+    } catch (e) {
+      setError(e.message || 'Failed to load analytics');
+      setAnalytics(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadUsers = async () => {
-    setLoading(true);
-    setUsers([
-      { _id: '1', fullName: 'Alice Silva', slIIId: 'IT21012345', email: 'alice@sliit.lk', role: 'student', isActive: true },
-      { _id: '2', fullName: 'Bob Perera', slIIId: 'IT21012346', email: 'bob@sliit.lk', role: 'student', isActive: true },
-      { _id: '3', fullName: 'Charles Admin', slIIId: 'IT00000001', email: 'admin@gmail.com', role: 'admin', isActive: true }
-    ]);
-    setLoading(false);
+  const loadUsers = async (searchTerm = '') => {
+    try {
+      setLoading(true);
+      setError('');
+      const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+      const data = await apiGetAdminUsers(query);
+      setUsers(Array.isArray(data?.users) ? data.users : []);
+    } catch (e) {
+      setError(e.message || 'Failed to load users');
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const loadResources = async () => {
-    setLoading(true);
-    setResources([
-      { _id: 'r1', title: 'Data Structures Notes', uploader: { fullName: 'Alice Silva' }, views: 128, downloads: 74, fileType: 'pdf', visibility: 'public' },
-      { _id: 'r2', title: 'Algorithms Past Paper', uploader: { fullName: 'Bob Perera' }, views: 220, downloads: 110, fileType: 'docx', visibility: 'public' }
-    ]);
-    setLoading(false);
+  const loadResources = async (searchTerm = '') => {
+    try {
+      setLoading(true);
+      setError('');
+      const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
+      const data = await apiGetAdminResources(query);
+      setResources(Array.isArray(data?.resources) ? data.resources : []);
+    } catch (e) {
+      setError(e.message || 'Failed to load resources');
+      setResources([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -60,22 +81,33 @@ const AdminDashboard = () => {
     // eslint-disable-next-line
   }, [activeTab]);
 
-  const handleSuspend = (id, isActive) => {
-    const nextUsers = users.map(u => u._id === id ? { ...u, isActive: !isActive } : u);
-    setUsers(nextUsers);
-    showToast(isActive ? 'User suspended successfully' : 'User activated successfully');
+  const handleSuspend = async (id, isActive) => {
+    try {
+      setError('');
+      const result = isActive ? await apiSuspendUser(id) : await apiActivateUser(id);
+      showToast(result?.message || (isActive ? 'User suspended successfully' : 'User activated successfully'));
+      await loadUsers(search);
+    } catch (e) {
+      setError(e.message || 'Failed to update user status');
+    }
   };
 
-  const handleDeleteResource = (id) => {
+  const handleDeleteResource = async (id) => {
     if (!window.confirm('Remove this resource permanently?')) return;
-    setResources(prev => prev.filter(r => r._id !== id));
-    showToast('Resource removed');
+    try {
+      setError('');
+      const result = await apiAdminDeleteResource(id);
+      showToast(result?.message || 'Resource removed');
+      await loadResources(search);
+    } catch (e) {
+      setError(e.message || 'Failed to remove resource');
+    }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     e.preventDefault();
-    if (activeTab === 'users') loadUsers();
-    else if (activeTab === 'resources') loadResources();
+    if (activeTab === 'users') await loadUsers(search);
+    else if (activeTab === 'resources') await loadResources(search);
   };
 
   return (
@@ -86,12 +118,6 @@ const AdminDashboard = () => {
       {/* Header */}
       <header className="admin-header">
         <div className="admin-header__inner">
-          <Link to="/" className="admin-back-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-            Back to Home
-          </Link>
           <div className="admin-header__brand">
             <div className="admin-logo">
               <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
@@ -197,7 +223,7 @@ const AdminDashboard = () => {
             <div className="admin-reports-summary">
               <h3>Report Status Breakdown</h3>
               <div className="report-bars">
-                {['Pending', 'Reviewed', 'Resolved'].map(s => {
+                {['Pending', 'Reviewed', 'Resolved', 'Rejected'].map(s => {
                   const count = analytics.reports?.[s] || 0;
                   const total = analytics.reports?.total || 1;
                   return (
@@ -305,7 +331,7 @@ const AdminDashboard = () => {
                       <tr key={r._id}>
                         <td className="admin-table__title">{r.title}</td>
                         <td>{r.subject}</td>
-                        <td><span className="badge badge--type">{r.fileType}</span></td>
+                        <td><span className="badge badge--type">{r.fileType || r.resourceType || 'other'}</span></td>
                         <td>{r.uploader?.fullName || 'Unknown'}</td>
                         <td>{r.views}</td>
                         <td>

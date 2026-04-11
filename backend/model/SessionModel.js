@@ -1,5 +1,28 @@
 const mongoose = require('mongoose');
 
+const joinNotificationSchema = new mongoose.Schema(
+    {
+        participantItNumber: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        message: {
+            type: String,
+            required: true,
+            trim: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    },
+    {
+        _id: true,
+        id: false
+    }
+);
+
 const sessionSchema = new mongoose.Schema({
     subject: {
         type: String,
@@ -33,6 +56,19 @@ const sessionSchema = new mongoose.Schema({
     studentId: {
         type: String,
         required: true
+    },
+    participants: {
+        type: [
+            {
+                type: String,
+                trim: true
+            }
+        ],
+        default: []
+    },
+    joinNotifications: {
+        type: [joinNotificationSchema],
+        default: []
     },
     status: {
         type: String,

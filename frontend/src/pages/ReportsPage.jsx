@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  apiCreateReport,
+  apiDeleteReport,
+  apiGetReports,
+  apiUpdateReportStatus
+} from '../api/api';
 import './ReportsPage.css';
 
-const STATUSES = ['', 'Pending', 'Reviewed', 'Resolved'];
-const TYPES    = ['', 'group', 'request', 'user'];
+const STATUSES = ['', 'Pending', 'Reviewed', 'Resolved', 'Rejected'];
+const TYPES    = ['', 'group', 'request', 'user', 'resource'];
 
 const ReportsPage = () => {
   const [reports, setReports]       = useState([]);
@@ -22,17 +28,30 @@ const ReportsPage = () => {
     setTimeout(() => setToast({ msg: '', ok: true }), 3000);
   };
 
-  const loadReports = () => {
-    setLoading(true);
-    setError('');
-    setReports([
-      { _id: 'rep1', type: 'group', reportedBy: { fullName: 'Alice Silva' }, reason: 'Inappropriate behavior in group', status: 'Pending', createdAt: new Date().toISOString() },
-      { _id: 'rep2', type: 'request', reportedBy: { fullName: 'Bob Perera' }, reason: 'Spam request posted', status: 'Reviewed', createdAt: new Date(Date.now() - 86400000).toISOString() }
-    ]);
-    setLoading(false);
+  const loadReports = async (statusValue = filterStatus, typeValue = filterType) => {
+    try {
+      setLoading(true);
+      setError('');
+      const params = new URLSearchParams();
+      if (statusValue) params.set('status', statusValue);
+      if (typeValue) params.set('type', typeValue);
+      params.set('limit', '200');
+
+      const query = params.toString();
+      const data = await apiGetReports(query ? `?${query}` : '');
+      setReports(Array.isArray(data?.reports) ? data.reports : []);
+    } catch (e) {
+      setError(e.message || 'Failed to load reports');
+      setReports([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { loadReports(); }, []); // eslint-disable-line
+  useEffect(() => {
+    loadReports();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus, filterType]);
 
   const validateForm = () => {
     const errs = {};
@@ -43,28 +62,54 @@ const ReportsPage = () => {
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setReports(prev => ([
-      ...prev,
-      { _id: `rep-${Date.now()}`, type: form.type, reportedBy: { fullName: 'Current User' }, reason: form.reason, status: 'Pending', createdAt: new Date().toISOString() }
-    ]));
-    showToast('Report submitted successfully ✓');
-    setShowForm(false);
-    setForm({ type: 'group', referenceId: '', reason: '' });
-    setFormErrors({});
+    try {
+      setSubmitting(true);
+      setError('');
+      const result = await apiCreateReport({
+        type: form.type,
+        referenceId: form.referenceId.trim(),
+        reason: form.reason.trim()
+      });
+
+      showToast(result?.message || 'Report submitted successfully ✓');
+      setShowForm(false);
+      setForm({ type: 'group', referenceId: '', reason: '' });
+      setFormErrors({});
+      await loadReports();
+    } catch (e) {
+      setError(e.message || 'Failed to submit report');
+      showToast(e.message || 'Failed to submit report', false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleStatusChange = (id, status) => {
-    setReports(prev => prev.map(r => r._id === id ? { ...r, status } : r));
-    showToast(`Status updated to "${status}"`);
+  const handleStatusChange = async (id, status) => {
+    try {
+      setError('');
+      const result = await apiUpdateReportStatus(id, status);
+      showToast(result?.message || `Status updated to "${status}"`);
+      await loadReports();
+    } catch (e) {
+      setError(e.message || 'Failed to update report status');
+      showToast(e.message || 'Failed to update report status', false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setReports(prev => prev.filter(r => r._id !== id));
-    showToast('Report deleted successfully');
+  const handleDelete = async (id) => {
+    try {
+      setError('');
+      const result = await apiDeleteReport(id);
+      showToast(result?.message || 'Report deleted successfully');
+      await loadReports();
+    } catch (e) {
+      setError(e.message || 'Failed to delete report');
+      showToast(e.message || 'Failed to delete report', false);
+    }
   };
 
   const filteredReports = reports.filter(r => {
@@ -82,12 +127,6 @@ const ReportsPage = () => {
       {/* Header */}
       <header className="rp-header">
         <div className="rp-header__inner">
-          <Link to="/" className="rp-back">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M19 12H5M12 5l-7 7 7 7"/>
-            </svg>
-            Home
-          </Link>
           <div className="rp-header__center">
             <span className="rp-header__icon">🛡️</span>
             <div>
@@ -122,6 +161,7 @@ const ReportsPage = () => {
                     <option value="group">Study Group</option>
                     <option value="request">Help Request</option>
                     <option value="user">User</option>
+                    <option value="resource">Resource</option>
                   </select>
                   {formErrors.type && <span className="rp-field-error">{formErrors.type}</span>}
                 </div>
@@ -226,7 +266,7 @@ const ReportsPage = () => {
                   <tr key={r._id}>
                     <td>
                       <span className={`rp-badge rp-badge--type-${r.type}`}>
-                        {r.type === 'group' ? '👥' : r.type === 'request' ? '❓' : '👤'} {r.type}
+                        {r.type === 'group' ? '👥' : r.type === 'request' ? '❓' : r.type === 'resource' ? '📁' : '👤'} {r.type}
                       </span>
                     </td>
                     <td>
@@ -246,6 +286,7 @@ const ReportsPage = () => {
                         <option value="Pending">Pending</option>
                         <option value="Reviewed">Reviewed</option>
                         <option value="Resolved">Resolved</option>
+                        <option value="Rejected">Rejected</option>
                       </select>
                     </td>
                     <td className="rp-date">{new Date(r.createdAt).toLocaleDateString()}</td>

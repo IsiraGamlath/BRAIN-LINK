@@ -18,7 +18,7 @@ export default function Login() {
 
   const from = location.state?.from?.pathname || null;
 
-  const [form, setForm] = useState({ email: '', password: '', role: '' });
+  const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
@@ -29,7 +29,6 @@ export default function Login() {
     if (!form.email.trim()) e.email = 'Email is required';
     else if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Invalid email format';
     if (!form.password) e.password = 'Password is required';
-    if (!form.role) e.role = 'Please select a role';
     return e;
   };
 
@@ -49,10 +48,15 @@ export default function Login() {
     setAlert(null);
 
     try {
-      const user = await login(form.email.trim(), form.password, form.role);
-      toast.success(`Welcome back, ${user.fullName}! 🎉`);
+      const user = await login(form.email.trim(), form.password);
+      toast.success(`Welcome back, ${user.fullName}!`);
 
-      const dest = from || (user.role === 'admin' ? '/project-group-hub' : '/project-group-hub');
+      const adminOnlyPaths = ['/admin-dashboard', '/reports'];
+      const normalizedFrom = from === '/user-dashboard' ? '/profile' : from;
+      const redirectedFromAdminOnly = adminOnlyPaths.some((path) => from === path || from?.startsWith(`${path}/`));
+      const dest = user.role === 'admin'
+        ? '/admin-dashboard'
+        : (normalizedFrom && !redirectedFromAdminOnly ? normalizedFrom : '/profile');
       navigate(dest, { replace: true });
     } catch (err) {
       const msg = err.message || 'Invalid credentials';
@@ -140,27 +144,6 @@ export default function Login() {
               {errors.email && <p className="form-error">⚠ {errors.email}</p>}
             </div>
 
-            {/* Role */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="login-role">Role</label>
-              <div className="form-input-wrap">
-                <span className="form-input-icon">👤</span>
-                <select
-                  id="login-role"
-                  name="role"
-                  className={`form-input${errors.role ? ' form-input--error' : ''}`}
-                  value={form.role}
-                  onChange={handleChange}
-                  disabled={loading}
-                >
-                  <option value="">Select role</option>
-                  <option value="admin">Admin</option>
-                  <option value="student">Student</option>
-                </select>
-              </div>
-              {errors.role && <p className="form-error">⚠ {errors.role}</p>}
-            </div>
-
             {/* Password */}
             <div className="form-group">
               <label className="form-label" htmlFor="login-password">Password</label>
@@ -191,8 +174,8 @@ export default function Login() {
             </div>
 
             {/* Forgot password link */}
-            <div style={{ textAlign: 'right', marginTop: '-8px' }}>
-              <Link to="/forgot-password" style={{ color: '#818cf8', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>
+            <div className="auth-inline-link-row">
+              <Link to="/forgot-password" className="auth-inline-link">
                 Forgot password?
               </Link>
             </div>

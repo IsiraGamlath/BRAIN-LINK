@@ -483,6 +483,362 @@
   color: #8f5d08;
 }
 
+.fresh-status-pill.open {
+  background: #dbf3ee;
+  color: #1c6e65;
+}
+
+.fresh-status-pill.accepted {
+  background: #e9efff;
+  color: #2f4fb8;
+}
+
+.fresh-status-pill.closed {
+  background: #f3f4f6;
+  color: #4f5966;
+}
+
+.fresh-status-pill.booked {
+  background: #dbf3ee;
+  color: #1c6e65;
+}
+
+.fresh-status-pill.cancelled {
+  background: #fff0f0;
+  color: #9b2f2f;
+}
+
+.fresh-status-pill.completed {
+  background: #e9efff;
+  color: #2f4fb8;
+}
+
+.fresh-panel--requests {
+  display: grid;
+  gap: 14px;
+}
+
+.fresh-panel--sessions {
+  display: grid;
+  gap: 14px;
+}
+
+.fresh-panel--project-group {
+  padding: 0;
+  overflow: hidden;
+}
+
+.fresh-panel--project-group .my-group-page {
+  max-width: none;
+  margin: 0;
+  padding: 20px;
+}
+
+.fresh-panel--project-group .group-details-page {
+  max-width: none;
+  margin: 0;
+  padding: 20px;
+}
+
+.fresh-panel--project-group .create-page {
+  max-width: none;
+  margin: 0;
+  padding: 20px;
+}
+
+.fresh-session-sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fresh-session-form-wrap {
+  border: 1px solid #deebf5;
+  border-radius: 14px;
+  background: #f8fbfd;
+  padding: 12px;
+}
+
+.fresh-session-block {
+  border: 1px solid #deebf5;
+  border-radius: 14px;
+  background: #f8fbfd;
+  padding: 12px;
+}
+
+.fresh-session-block h4 {
+  margin: 0;
+  color: #173256;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fresh-session-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.fresh-session-list li {
+  border: 1px solid #deebf5;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 11px;
+}
+
+.fresh-session-card-list {
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.fresh-session-details-block {
+  display: grid;
+  gap: 10px;
+}
+
+.fresh-session-details-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fresh-session-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.fresh-session-details-item {
+  border: 1px solid #deebf5;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 10px;
+  display: grid;
+  gap: 4px;
+}
+
+.fresh-session-details-item strong {
+  color: #53708d;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fresh-session-details-item span {
+  color: #143354;
+  font-size: 0.9rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.fresh-session-details-item-wide {
+  grid-column: 1 / -1;
+}
+
+.fresh-session-participants {
+  display: grid;
+  gap: 8px;
+}
+
+.fresh-session-participants h5 {
+  margin: 0;
+  color: #173256;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fresh-session-participants-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.fresh-session-participants-list li {
+  border: 1px solid #deebf5;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 10px;
+  color: #143354;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.fresh-requests-head p {
+  margin: 6px 0 0;
+}
+
+.fresh-requests-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.fresh-requests-head > div {
+  min-width: 0;
+}
+
+.fresh-project-group-head {
+  padding: 18px 20px;
+  border-bottom: 1px solid #dce8f2;
+  background: linear-gradient(155deg, #ffffff 0%, #f7fbff 100%);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.fresh-project-group-head p {
+  margin: 6px 0 0;
+  color: #536983;
+  font-size: 0.9rem;
+}
+
+.fresh-action-btn {
+  border: 1px solid #2f6a8a;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
+  color: #ffffff;
+  padding: 9px 14px;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 14px rgba(35, 92, 122, 0.2);
+}
+
+.fresh-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 18px rgba(35, 92, 122, 0.28);
+}
+
+.fresh-request-filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fresh-filter-chip {
+  border: 1px solid #c3d8e8;
+  border-radius: 999px;
+  background: #f4f9fd;
+  color: #284d6a;
+  padding: 8px 12px;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.fresh-filter-chip.active {
+  background: #2f6a8a;
+  border-color: #2f6a8a;
+  color: #ffffff;
+}
+
+.fresh-request-state {
+  margin: 2px 0 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f8fbfd;
+  border: 1px solid #e1ebf4;
+  color: #45617d;
+  font-size: 0.9rem;
+}
+
+.fresh-request-state--error {
+  background: #fff0f0;
+  border-color: #f6cdcd;
+  color: #9b2f2f;
+}
+
+.fresh-request-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.fresh-request-list li {
+  border: 1px solid #deebf5;
+  border-radius: 14px;
+  background: #f8fbfd;
+  padding: 12px;
+}
+
+.fresh-request-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.fresh-request-top strong {
+  color: #0f223d;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.fresh-request-list p {
+  margin: 9px 0 0;
+  color: #48627e;
+  font-size: 0.87rem;
+}
+
+.fresh-request-meta {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #5a738d;
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fresh-request-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fresh-request-view-btn {
+  min-height: 34px;
+  border: 1px solid #bfd5e7;
+  border-radius: 999px;
+  background: #f2f8fc;
+  color: #284d6a;
+  padding: 0 12px;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.fresh-request-view-btn:hover {
+  background: #e8f2f9;
+  transform: translateY(-1px);
+}
+
 .fresh-panel--empty {
   min-height: 220px;
   display: grid;
@@ -576,5 +932,43 @@
   .fresh-academic-list li {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .fresh-request-top,
+  .fresh-request-meta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fresh-request-actions {
+    justify-content: flex-start;
+  }
+
+  .fresh-action-btn {
+    width: 100%;
+  }
+
+  .fresh-project-group-head {
+    padding: 14px;
+  }
+
+  .fresh-session-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .fresh-session-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fresh-panel--project-group .my-group-page {
+    padding: 14px;
+  }
+
+  .fresh-panel--project-group .group-details-page {
+    padding: 14px;
+  }
+
+  .fresh-panel--project-group .create-page {
+    padding: 14px;
   }
 }

@@ -1,15 +1,45 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import HelpCard from "../components/Peer_Help_Request/HelpCard";
 import RespondModal from "../components/Peer_Help_Request/RespondModal";
+import { useAuth } from "../context/AuthContext";
+import { useCurrentUser } from "../context/CurrentUserContext";
+import "./HelpFeedPage.css";
 
 // HelpFeedPage: Display all open help requests
 const HelpFeedPage = () => {
+  const { user } = useAuth();
+  const { currentUser } = useCurrentUser();
+  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [requestTypeFilter, setRequestTypeFilter] = useState("all");
+
+  const filterOptions = [
+    { value: "all", label: "All" },
+    { value: "chat", label: "Chat" },
+    { value: "session", label: "Session" },
+  ];
+
+  const currentRequesterId = useMemo(() => {
+    const candidates = [
+      user?.slIIId,
+      currentUser?.itNumber,
+      user?._id,
+      user?.email,
+      localStorage.getItem("userId"),
+    ];
+
+    const found = candidates.find((candidate) => {
+      return candidate !== undefined && candidate !== null && String(candidate).trim() !== "";
+    });
+
+    return found ? String(found).trim().toLowerCase() : "";
+  }, [user?.slIIId, currentUser?.itNumber, user?._id, user?.email]);
 
   // Fetch all open help requests
   const fetchRequests = async () => {
@@ -27,6 +57,28 @@ const HelpFeedPage = () => {
   useEffect(() => {
     fetchRequests();
   }, []);
+
+  const otherUserRequests = useMemo(() => {
+    if (!currentRequesterId) {
+      return requests;
+    }
+
+    return requests.filter((request) => {
+      const requestOwner = String(request.userId || "").trim().toLowerCase();
+      return requestOwner !== currentRequesterId;
+    });
+  }, [requests, currentRequesterId]);
+
+  const filteredRequests = useMemo(() => {
+    if (requestTypeFilter === "all") {
+      return otherUserRequests;
+    }
+
+    return otherUserRequests.filter((request) => {
+      const requestType = String(request?.helpType || "").trim().toLowerCase();
+      return requestType === requestTypeFilter;
+    });
+  }, [otherUserRequests, requestTypeFilter]);
 
   const handleRespond = (request) => {
     setSelectedRequest(request);
@@ -47,57 +99,102 @@ const HelpFeedPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">Help Feed</h1>
-          <p className="mt-2 text-lg text-gray-600">Browse and respond to help requests from your peers</p>
-        </div>
-
-        {loading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    <section className="help-feed-page">
+      <div className="help-feed-shell">
+        <header className="help-feed-hero">
+          <div>
+            <p className="help-feed-kicker">Peer Help Workspace</p>
+            <h1>Help Request Feed</h1>
+            <p>Browse requests published by other users and respond where you can help.</p>
           </div>
-        )}
+          <button
+            type="button"
+            className="help-feed-create-btn"
+            onClick={() => navigate("/post")}
+          >
+            Create a Request
+          </button>
+        </header>
 
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
-            <p className="text-red-700 font-medium">{error}</p>
+        <section className="help-feed-panel">
+          <div className="help-feed-header-row">
+            <h2>All Requests by Other Users</h2>
+            <span className="help-feed-count">{filteredRequests.length}</span>
           </div>
-        )}
 
-        {!loading && requests.length === 0 && (
-          <div className="flex justify-center items-center py-20">
-            <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md text-center border border-gray-100">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-6">
-                <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">No help requests available</h3>
-              <p className="text-gray-600 mb-6">There are no open help requests right now. Be the first to post!</p>
-              <a 
-                href="/post" 
-                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition"
-              >
-                Post a Request
-              </a>
+          <div className="help-feed-filter-row">
+            <p className="help-feed-filter-label">Filter by type:</p>
+            <div className="help-feed-filter-group" role="tablist" aria-label="Filter requests by type">
+              {filterOptions.map((option) => {
+                const isActive = requestTypeFilter === option.value;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    className={`help-feed-filter-btn${isActive ? " is-active" : ""}`}
+                    onClick={() => setRequestTypeFilter(option.value)}
+                    role="tab"
+                    aria-selected={isActive}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 auto-rows-max">
-          {Array.isArray(requests) && requests.length > 0 && requests.map((req) => (
-            <HelpCard
-              key={req._id}
-              request={req}
-              showRespond={req.status === "Open"}
-              showClose={req.status === "Accepted"}
-              onRespond={handleRespond}
-              onClose={handleClose}
-            />
-          ))}
-        </div>
+          {!currentRequesterId && (
+            <p className="help-feed-note">Showing all requests. Sign in to automatically hide your own posts.</p>
+          )}
+
+          {loading && (
+            <div className="help-feed-loading-wrap">
+              <div className="help-feed-spinner" aria-hidden="true" />
+              <p className="help-feed-state">Loading help requests...</p>
+            </div>
+          )}
+
+          {!loading && error && <p className="help-feed-state help-feed-state-error">{error}</p>}
+
+          {!loading && !error && otherUserRequests.length === 0 && (
+            <div className="help-feed-empty">
+              <div className="help-feed-empty-icon" aria-hidden="true">🔎</div>
+              <h3>No help requests available</h3>
+              <p>There are no requests from other users right now. You can create one to get started.</p>
+              <button
+                type="button"
+                className="help-feed-create-btn"
+                onClick={() => navigate("/post")}
+              >
+                Create a Request
+              </button>
+            </div>
+          )}
+
+          {!loading && !error && otherUserRequests.length > 0 && filteredRequests.length === 0 && (
+            <div className="help-feed-empty">
+              <div className="help-feed-empty-icon" aria-hidden="true">🔎</div>
+              <h3>No {requestTypeFilter} requests found</h3>
+              <p>Try another filter to browse all available help requests.</p>
+            </div>
+          )}
+
+          {!loading && !error && filteredRequests.length > 0 && (
+            <div className="help-feed-grid">
+              {Array.isArray(filteredRequests) && filteredRequests.map((req) => (
+                <HelpCard
+                  key={req._id}
+                  request={req}
+                  showRespond={req.status === "Open"}
+                  showClose={req.status === "Accepted"}
+                  onRespond={handleRespond}
+                  onClose={handleClose}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
 
       <RespondModal
@@ -106,7 +203,7 @@ const HelpFeedPage = () => {
         requestId={selectedRequest?._id}
         onResponded={handleResponded}
       />
-    </div>
+    </section>
   );
 };
 

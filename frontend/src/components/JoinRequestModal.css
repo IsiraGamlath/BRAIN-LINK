@@ -1,33 +1,34 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Sora:wght@400;500;600;700&display=swap");
+
 .join-request-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background: rgba(11, 22, 36, 0.52);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
-  animation: fadeIn 0.3s ease;
+  animation: joinModalFadeIn 0.25s ease;
   backdrop-filter: blur(4px);
 }
 
-@keyframes fadeIn {
+@keyframes joinModalFadeIn {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
-@keyframes slideUp {
+@keyframes joinModalRise {
   from {
-    transform: translateY(40px);
+    transform: translateY(24px);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -35,133 +36,131 @@
 }
 
 .join-request-modal {
-  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+  background: linear-gradient(162deg, #ffffff 0%, #f7fcff 64%, #fff9ef 100%);
   border-radius: 18px;
-  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  box-shadow: 0 26px 52px rgba(15, 43, 66, 0.24);
   width: 100%;
   max-width: 520px;
   padding: 0;
-  animation: slideUp 0.3s ease;
-  border: 1px solid #e5eaf2;
+  animation: joinModalRise 0.25s ease;
+  border: 1px solid #d4e3ee;
+  font-family: "Sora", "Trebuchet MS", sans-serif;
 }
 
 .join-request-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 32px;
-  border-bottom: 1px solid #e5eaf2;
+  padding: 24px 26px;
+  border-bottom: 1px solid #dde9f1;
 }
 
 .join-request-modal-title {
-  font-size: 22px;
-  font-weight: 900;
-  color: #0f172a;
+  font-size: 1.26rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 800;
+  color: #112a44;
   margin: 0;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
 }
 
 .join-request-modal-close {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 28px;
-  color: #cbd5e1;
+  font-size: 1.7rem;
+  color: #8ca1b5;
   cursor: pointer;
   padding: 0;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   border-radius: 8px;
 }
 
 .join-request-modal-close:hover {
-  color: #1e293b;
-  background-color: #f1f5ff;
+  color: #2f6a8a;
+  background-color: #eaf4fb;
 }
 
 .join-request-modal-form {
-  padding: 28px;
+  padding: 24px;
 }
 
 .join-request-modal-subtitle {
-  font-size: 15px;
-  color: #475569;
-  margin: 0 0 28px 0;
+  font-size: 0.88rem;
+  color: #5b6f87;
+  margin: 0 0 24px;
   line-height: 1.7;
-  font-weight: 500;
+}
+
+.join-request-modal-subtitle strong {
+  color: #173451;
 }
 
 .join-request-form-group {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .join-request-form-label {
   display: block;
-  font-size: 13px;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 8px;
-  letter-spacing: 0.3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #3e556f;
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.join-request-form-input {
+.join-request-form-input,
+.join-request-form-textarea {
   width: 100%;
-  padding: 11px 14px;
-  font-size: 14px;
-  border: 1.5px solid #e5eaf2;
-  border-radius: 10px;
+  border: 1px solid #c8d8e6;
+  border-radius: 11px;
   font-family: inherit;
   box-sizing: border-box;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   background-color: #ffffff;
-  color: #0f172a;
+  color: #132e4a;
 }
 
-.join-request-form-input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+.join-request-form-input {
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.86rem;
+}
+
+.join-request-form-textarea {
+  min-height: 104px;
+  padding: 10px 12px;
+  font-size: 0.86rem;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.join-request-form-input:focus,
+.join-request-form-textarea:focus {
+  border-color: #2f6a8a;
+  box-shadow: 0 0 0 4px rgba(47, 106, 138, 0.14);
   outline: none;
 }
 
 .join-request-form-input-readonly {
-  background-color: #f8fafc;
-  color: #64748b;
+  background-color: #f2f7fb;
+  color: #6d8199;
   cursor: not-allowed;
-  border-color: #e5eaf2;
+  border-color: #d8e5ef;
 }
 
 .join-request-form-input-readonly:disabled {
   opacity: 1;
 }
 
-.join-request-form-textarea {
-  width: 100%;
-  padding: 11px 14px;
-  font-size: 14px;
-  border: 1.5px solid #e5eaf2;
-  border-radius: 10px;
-  font-family: inherit;
-  box-sizing: border-box;
-  background-color: #ffffff;
-  color: #0f172a;
-  resize: vertical;
-  min-height: 100px;
-  transition: all 0.3s ease;
-}
-
-.join-request-form-textarea:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
-  outline: none;
-}
-
 .join-request-char-count {
-  font-size: 12px;
-  color: #94a3b8;
+  font-size: 0.72rem;
+  color: #7a8ea5;
   margin-top: 6px;
   text-align: right;
   font-weight: 600;
@@ -169,81 +168,74 @@
 
 .join-request-modal-footer {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   justify-content: flex-end;
-  padding: 0 28px 28px 28px;
+  padding: 0 24px 24px;
+}
+
+.join-request-btn-cancel,
+.join-request-btn-submit {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 0.77rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .join-request-btn-cancel {
-  padding: 11px 22px;
-  font-size: 13px;
-  font-weight: 800;
-  border: 1.5px solid #e5eaf2;
-  border-radius: 10px;
-  background-color: #ffffff;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  border: 1px solid #c8d8e6;
+  background-color: #f3f8fc;
+  color: #314f6a;
 }
 
 .join-request-btn-cancel:hover {
-  background-color: #f1f5ff;
-  border-color: #4f46e5;
-  color: #4f46e5;
-}
-
-.join-request-btn-cancel:active {
-  transform: scale(0.98);
+  background-color: #e7f1f8;
 }
 
 .join-request-btn-submit {
-  padding: 11px 22px;
-  font-size: 13px;
-  font-weight: 800;
   border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
   color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  box-shadow: 0 8px 16px rgba(24, 78, 108, 0.24);
 }
 
 .join-request-btn-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(79, 70, 229, 0.35);
+  transform: translateY(-1px);
 }
 
-.join-request-btn-submit:active {
-  transform: translateY(0);
+.join-request-btn-submit:disabled,
+.join-request-btn-cancel:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
 }
 
 @media (max-width: 480px) {
   .join-request-modal {
     max-width: 100%;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .join-request-modal-header {
-    padding: 20px 24px;
+    padding: 18px;
   }
 
   .join-request-modal-title {
-    font-size: 18px;
+    font-size: 1.05rem;
   }
 
   .join-request-modal-form {
-    padding: 20px 24px;
+    padding: 16px;
   }
 
   .join-request-modal-footer {
     flex-direction: column-reverse;
-    padding: 0 24px 20px 24px;
-    gap: 12px;
+    padding: 0 16px 16px;
+    gap: 8px;
   }
 
   .join-request-btn-cancel,

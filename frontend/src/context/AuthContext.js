@@ -90,20 +90,13 @@ export const AuthProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = async (email, password, role) => {
+  const login = async (email, password) => {
     if (!email || !password) {
       throw new Error('Email and password are required');
     }
 
     const response = await apiLogin(email, password);
     const backendUser = normalizeUser(response.user);
-
-    if (role === 'admin' && backendUser.role !== 'admin') {
-      throw new Error('This account is not an admin account');
-    }
-    if (role === 'student' && backendUser.role === 'admin') {
-      throw new Error('Please choose Admin role for this account');
-    }
 
     const auth = {
       user: backendUser,

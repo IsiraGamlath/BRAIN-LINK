@@ -1,12 +1,31 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import HelpCard from "../components/Peer_Help_Request/HelpCard";
+import { useAuth } from "../context/AuthContext";
+import { useCurrentUser } from "../context/CurrentUserContext";
+import "./MyRequestsPage.css";
 
 // MyRequestsPage: Display logged-in user's help requests
 const MyRequestsPage = () => {
-  // Replace with actual userId from auth context
-  const userId = localStorage.getItem("userId") || "anonymousUser";
+  const { user } = useAuth();
+  const { currentUser } = useCurrentUser();
+  const userId = useMemo(() => {
+    const candidates = [
+      user?.slIIId,
+      currentUser?.itNumber,
+      user?._id,
+      user?.email,
+      localStorage.getItem("userId"),
+    ];
+
+    const found = candidates.find((candidate) => {
+      return candidate !== undefined && candidate !== null && String(candidate).trim() !== "";
+    });
+
+    return found ? String(found).trim() : "";
+  }, [user?.slIIId, user?._id, user?.email, currentUser?.itNumber]);
+
   const navigate = useNavigate();
   
   const [requests, setRequests] = useState([]);
@@ -16,6 +35,13 @@ const MyRequestsPage = () => {
 
   // Fetch user's help requests
   const fetchMyRequests = useCallback(async () => {
+    if (!userId) {
+      setRequests([]);
+      setError("Unable to identify your account. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError("");
     try {
@@ -82,129 +108,107 @@ const MyRequestsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900">My Help Requests</h1>
-          <p className="mt-2 text-lg text-gray-600">Manage and track your help requests</p>
-        </div>
+    <section className="my-requests-page">
+      <div className="my-requests-shell">
+        <header className="my-requests-hero">
+          <p className="my-requests-kicker">Profile Workspace</p>
+          <h1>My Help Requests</h1>
+          <p>Manage and track your help requests.</p>
+        </header>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-600">
-            <p className="text-gray-600 text-sm font-medium">Total Requests</p>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{stats.total}</p>
+        <section className="my-requests-panel">
+          <div className="my-requests-stats">
+            <article className="my-requests-stat-card is-total">
+              <p>Total Requests</p>
+              <strong>{stats.total}</strong>
+            </article>
+            <article className="my-requests-stat-card is-open">
+              <p>Open</p>
+              <strong>{stats.open}</strong>
+            </article>
+            <article className="my-requests-stat-card is-accepted">
+              <p>Accepted</p>
+              <strong>{stats.accepted}</strong>
+            </article>
+            <article className="my-requests-stat-card is-closed">
+              <p>Closed</p>
+              <strong>{stats.closed}</strong>
+            </article>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <p className="text-gray-600 text-sm font-medium">Open</p>
-            <p className="text-3xl font-bold text-green-500 mt-2">{stats.open}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
-            <p className="text-gray-600 text-sm font-medium">Accepted</p>
-            <p className="text-3xl font-bold text-yellow-500 mt-2">{stats.accepted}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-            <p className="text-gray-600 text-sm font-medium">Closed</p>
-            <p className="text-3xl font-bold text-red-500 mt-2">{stats.closed}</p>
-          </div>
-        </div>
 
-        {/* Filter Buttons */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              filter === "all"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            All ({stats.total})
-          </button>
-          <button
-            onClick={() => setFilter("open")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              filter === "open"
-                ? "bg-green-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            Open ({stats.open})
-          </button>
-          <button
-            onClick={() => setFilter("accepted")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              filter === "accepted"
-                ? "bg-yellow-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            Accepted ({stats.accepted})
-          </button>
-          <button
-            onClick={() => setFilter("closed")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
-              filter === "closed"
-                ? "bg-red-600 text-white"
-                : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-            }`}
-          >
-            Closed ({stats.closed})
-          </button>
-        </div>
-
-        {/* Content */}
-        {loading && (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="my-requests-filter-row" role="toolbar" aria-label="Request status filters">
+            <button
+              type="button"
+              onClick={() => setFilter("all")}
+              className={`my-requests-filter-btn ${filter === "all" ? "active" : ""}`}
+            >
+              All ({stats.total})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("open")}
+              className={`my-requests-filter-btn ${filter === "open" ? "active" : ""}`}
+            >
+              Open ({stats.open})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("accepted")}
+              className={`my-requests-filter-btn ${filter === "accepted" ? "active" : ""}`}
+            >
+              Accepted ({stats.accepted})
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilter("closed")}
+              className={`my-requests-filter-btn ${filter === "closed" ? "active" : ""}`}
+            >
+              Closed ({stats.closed})
+            </button>
           </div>
-        )}
 
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
-            <p className="text-red-700 font-medium">{error}</p>
-          </div>
-        )}
+          {loading && (
+            <div className="my-requests-state-wrap">
+              <div className="my-requests-spinner" aria-hidden="true" />
+              <p className="my-requests-state">Loading your requests...</p>
+            </div>
+          )}
 
-        {!loading && filteredRequests.length === 0 && (
-          <div className="flex justify-center items-center py-20">
-            <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md text-center border border-gray-100">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-6">
-                <svg className="w-10 h-10 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">You have not posted any requests</h3>
-              <p className="text-gray-600 mb-6">Your help requests will appear here. Get started by posting your first request!</p>
-              <a 
-                href="/post" 
-                className="inline-block bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-6 rounded-lg transition"
-              >
+          {!loading && error && <p className="my-requests-state my-requests-state-error">{error}</p>}
+
+          {!loading && !error && filteredRequests.length === 0 && (
+            <div className="my-requests-empty-card">
+              <div className="my-requests-empty-icon" aria-hidden="true">📋</div>
+              <h3>You have not posted any requests</h3>
+              <p>Your help requests will appear here. Get started by posting your first request.</p>
+              <a href="/post" className="my-requests-primary-link">
                 Post Your First Request
               </a>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="space-y-4">
-          {filteredRequests.map((req) => (
-            <HelpCard
-              key={req._id}
-              request={req}
-              showRespond={false}
-              showViewChat={true}
-              showClose={req.status === "Accepted"}
-              showEdit={req.status === "Open"}
-              showDelete={req.status === "Open"}
-              onClose={handleClose}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onViewChat={handleViewChat}
-            />
-          ))}
-        </div>
+          {!loading && !error && filteredRequests.length > 0 && (
+            <div className="my-requests-list">
+              {filteredRequests.map((req) => (
+                <HelpCard
+                  key={req._id}
+                  request={req}
+                  showRespond={false}
+                  showViewChat={true}
+                  showClose={req.status === "Accepted"}
+                  showEdit={req.status === "Open"}
+                  showDelete={req.status === "Open"}
+                  onClose={handleClose}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onViewChat={handleViewChat}
+                />
+              ))}
+            </div>
+          )}
+        </section>
       </div>
-    </div>
+    </section>
   );
 };
 

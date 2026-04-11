@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiDeleteResource, apiGetProfile, apiGetResources } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user: authUser } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -20,60 +21,35 @@ const UserDashboard = () => {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
-  // Mock data
-  const MOCK_PROFILE = {
-    _id: 'u1',
-    fullName: 'Alice Silva',
-    slIIId: 'IT21012345',
-    email: 'alice@sliit.lk',
-    role: 'student',
-    joinedGroups: ['group1', 'group2'],
-    createdAt: new Date().toISOString()
-  };
-
-  const MOCK_USER_RESOURCES = [
-    {
-      _id: 'r1',
-      title: 'Data Structures Notes',
-      description: 'Comprehensive notes on data structures.',
-      fileType: 'pdf',
-      subject: 'Computer Science',
-      views: 128,
-      downloads: 74,
-      rating: 4.5,
-      createdAt: new Date().toISOString()
-    },
-    {
-      _id: 'r3',
-      title: 'Database Design Tutorial',
-      description: 'Step-by-step tutorial on database design.',
-      fileType: 'pdf',
-      subject: 'Computer Science',
-      views: 95,
-      downloads: 45,
-      rating: 4.8,
-      createdAt: new Date(Date.now() - 172800000).toISOString()
-    }
-  ];
-
   useEffect(() => {
     const load = async () => {
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        setProfile(MOCK_PROFILE);
-        setResources(MOCK_USER_RESOURCES);
+        setError('');
+        const profileData = await apiGetProfile();
+        const currentProfile = profileData?.user || profileData;
+        setProfile(currentProfile || authUser || null);
+
+        const resourceData = await apiGetResources('?sort=-createdAt&limit=100');
+        const allResources = Array.isArray(resourceData?.resources) ? resourceData.resources : [];
+        const currentUserId = String(currentProfile?._id || authUser?._id || '');
+
+        const myResources = allResources.filter((r) => {
+          const uploaderId = typeof r.uploader === 'object' ? r.uploader?._id : r.uploader;
+          return String(uploaderId || '') === currentUserId;
+        });
+
+        setResources(myResources);
       } catch (e) {
         setError(e.message);
       } finally { setLoading(false); }
     };
     load();
-  }, []);
+  }, [authUser]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this resource?')) return;
     try {
+      await apiDeleteResource(id);
       setResources(prev => prev.filter(r => r._id !== id));
       showToast('Resource deleted');
     } catch (e) { showToast(`Error: ${e.message}`); }
@@ -81,8 +57,8 @@ const UserDashboard = () => {
 
   const stats = [
     { label: 'Resources Uploaded', value: resources.length, icon: '📁', color: 'blue' },
-    { label: 'Total Views',        value: resources.reduce((s,r)=>s+r.views,0), icon: '👁️', color: 'purple' },
-    { label: 'Total Downloads',    value: resources.reduce((s,r)=>s+r.downloads,0), icon: '⬇️', color: 'teal' },
+    { label: 'Total Views',        value: resources.reduce((s,r)=>s+(r.views || 0),0), icon: '👁️', color: 'purple' },
+    { label: 'Total Downloads',    value: resources.reduce((s,r)=>s+(r.downloads || 0),0), icon: '⬇️', color: 'teal' },
     { label: 'Groups Joined',      value: profile?.joinedGroups?.length || 0, icon: '👥', color: 'green' }
   ];
 
@@ -196,11 +172,11 @@ const UserDashboard = () => {
                   </div>
                   <div className="ud-activity-item">
                     <span className="ud-activity-dot ud-dot--purple"/>
-                    <span>Total Views Received: <strong>{resources.reduce((s,r)=>s+r.views,0)}</strong></span>
+                    <span>Total Views Received: <strong>{resources.reduce((s,r)=>s+(r.views || 0),0)}</strong></span>
                   </div>
                   <div className="ud-activity-item">
                     <span className="ud-activity-dot ud-dot--teal"/>
-                    <span>Total Downloads: <strong>{resources.reduce((s,r)=>s+r.downloads,0)}</strong></span>
+                    <span>Total Downloads: <strong>{resources.reduce((s,r)=>s+(r.downloads || 0),0)}</strong></span>
                   </div>
                   <div className="ud-activity-item">
                     <span className="ud-activity-dot ud-dot--green"/>
@@ -241,11 +217,11 @@ const UserDashboard = () => {
                     <div className="ud-res-type-badge">{r.fileType}</div>
                     <h4 className="ud-res-title">{r.title}</h4>
                     <p className="ud-res-subject">{r.subject}</p>
-                    <p className="ud-res-desc">{r.description?.slice(0, 80)}...</p>
+                    <p className="ud-res-desc">{r.description ? `${r.description.slice(0, 80)}...` : 'No description available.'}</p>
                     <div className="ud-res-meta">
-                      <span>👁 {r.views}</span>
-                      <span>⬇ {r.downloads}</span>
-                      <span>⭐ {r.averageRating?.toFixed(1) || '—'}</span>
+                      <span>👁 {r.views || 0}</span>
+                      <span>⬇ {r.downloads || 0}</span>
+                      <span>⭐ {(r.totalRatings || 0) > 0 ? Number(r.averageRating || 0).toFixed(1) : '—'}</span>
                     </div>
                     <div className="ud-res-actions">
                       <Link to="/resources" id={`ud-edit-${r._id}`} className="ud-res-btn ud-res-btn--edit">Edit</Link>

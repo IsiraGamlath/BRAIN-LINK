@@ -1,58 +1,61 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Sora:wght@400;500;600;700&display=swap");
+
 .filterbar-container {
-  background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
-  border-radius: 14px;
-  padding: 24px;
-  border: 1px solid #e5eaf2;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  margin-bottom: 32px;
+  background: linear-gradient(162deg, #ffffff 0%, #f5fbff 68%, #fff8ed 100%);
+  border-radius: 20px;
+  padding: 22px;
+  border: 1px solid #d4e3ee;
+  box-shadow: 0 10px 24px rgba(16, 58, 88, 0.07);
+  margin-bottom: 30px;
+  font-family: "Sora", "Trebuchet MS", sans-serif;
 }
 
 .filterbar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 18px;
-  margin-bottom: 18px;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .filterbar-form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
 .filterbar-label {
-  font-size: 12px;
-  font-weight: 800;
-  color: #1e293b;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #3c556f;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.05em;
 }
 
 .filterbar-input {
-  padding: 11px 14px;
-  font-size: 14px;
-  border: 1.5px solid #e5eaf2;
-  border-radius: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 0.85rem;
+  border: 1px solid #c9d9e7;
+  border-radius: 11px;
   font-family: inherit;
   background-color: #ffffff;
-  color: #1e293b;
-  transition: all 0.3s ease;
+  color: #163351;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .filterbar-input:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+  border-color: #2f6a8a;
+  box-shadow: 0 0 0 4px rgba(47, 106, 138, 0.14);
   outline: none;
 }
 
 .filterbar-input::placeholder {
-  color: #cbd5e1;
-  font-weight: 500;
+  color: #8ba0b5;
 }
 
 .filterbar-select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234f46e5' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232f6a8a' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
@@ -60,47 +63,45 @@
 
 .filterbar-button-group {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
 .filterbar-btn-secondary {
-  padding: 11px 18px;
-  font-size: 13px;
-  font-weight: 800;
-  border: 1.5px solid #e5eaf2;
+  min-height: 38px;
+  padding: 0 16px;
+  font-size: 0.75rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  border: 1px solid #c8d8e6;
   border-radius: 10px;
-  background-color: #ffffff;
-  color: #4f46e5;
+  background-color: #f2f8fc;
+  color: #2f6a8a;
   cursor: pointer;
-  transition: all 0.3s ease;
-  letter-spacing: 0.3px;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .filterbar-btn-secondary:hover {
-  border-color: #4f46e5;
-  background-color: #f1f5ff;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+  border-color: #2f6a8a;
+  background-color: #e7f1f8;
+  transform: translateY(-1px);
 }
 
 .filterbar-btn-secondary:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
 @media (max-width: 768px) {
   .filterbar-container {
-    padding: 20px;
+    padding: 18px;
+    border-radius: 16px;
   }
 
   .filterbar-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 14px;
-  }
-
-  .filterbar-input {
-    padding: 9px 12px;
-    font-size: 13px;
+    gap: 12px;
   }
 
   .filterbar-button-group {
@@ -110,18 +111,12 @@
 
 @media (max-width: 480px) {
   .filterbar-container {
-    padding: 16px;
-    margin-bottom: 24px;
+    padding: 15px;
+    margin-bottom: 22px;
   }
 
   .filterbar-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .filterbar-input {
-    padding: 10px 12px;
-    font-size: 14px;
   }
 
   .filterbar-button-group {

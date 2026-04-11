@@ -1,6 +1,6 @@
 // Combined App.js
 import React, { useCallback, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
 
 // Isira_Kuppi_Session components
@@ -10,7 +10,6 @@ import KuppiSessionsList from './components/KuppiSessionsList';
 // Kaushini_Study_Group components
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import KuppiSidebar from "./components/KuppiSidebar";
 import StudyGroupDashboard from "./pages/StudyGroupDashboard";
 import CreateProjectGroupPage from "./pages/CreateProjectGroupPage";
 import MyProjectGroupPage from "./pages/MyProjectGroupPage";
@@ -25,6 +24,11 @@ import PostRequestPage from "./pages/PostRequestPage";
 import MyRequestsPage from "./pages/MyRequestsPage";
 import EditRequestPage from "./pages/EditRequestPage";
 import ChatPage from "./pages/ChatPage";
+import ResourcePage from "./pages/ResourcePage";
+import AdminDashboard from "./pages/AdminDashboard";
+import ReportsPage from "./pages/ReportsPage";
+import { AdminRoute, GuestRoute, ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
+import { useAuth } from "./context/AuthContext";
 
 // Landing page components
 import Hero from "./components/Hero/Hero";
@@ -56,8 +60,14 @@ function HomePage() {
 function App() {
   // --- Shared state ---
   const { currentUser, setCurrentUserProfile } = useCurrentUser();
+  const { user } = useAuth();
+  const location = useLocation();
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [, setNotifications] = useState([]);
+
+  const isAdminUser = user?.role === 'admin';
+  const isAdminArea = location.pathname === '/admin-dashboard' || location.pathname.startsWith('/reports');
+  const showGlobalHeader = !(isAdminUser && isAdminArea);
 
   const handleEditProfile = useCallback(() => setShowProfileModal(true), []);
   const handleProfileSaved = useCallback((updatedProfile) => {
@@ -70,7 +80,7 @@ function App() {
   return (
     <div className="app">
       {/* Kaushini: Header and Sidebar */}
-      <Header />
+      {showGlobalHeader && <Header />}
 
       <div className="app-body">
         <Routes>
@@ -80,7 +90,6 @@ function App() {
             path="/project-group-hub"
             element={
               <div className="main-container">
-                <Sidebar />
                 <div className="content">
                   <StudyGroupDashboard
                     currentUser={currentUser}
@@ -120,7 +129,6 @@ function App() {
             path="/group-details/:id"
             element={
               <div className="main-container">
-                <Sidebar />
                 <div className="content">
                   <GroupDetailsPage currentUser={currentUser} />
                 </div>
@@ -130,6 +138,17 @@ function App() {
 
           <Route
             path="/help-request"
+            element={
+              <div className="main-container">
+                <div className="content">
+                  <HelpFeedPage />
+                </div>
+              </div>
+            }
+          />
+
+          <Route
+            path="/help-feed"
             element={
               <div className="main-container">
                 <div className="content">
@@ -183,17 +202,33 @@ function App() {
             }
           />
 
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
+              </GuestRoute>
+            }
+          />
 
           <Route
             path="/profile"
             element={
-              <div className="main-container">
-                <div className="content">
-                  <UserProfilePage currentUser={currentUser} onEditProfile={handleEditProfile} />
+              <ProtectedRoute>
+                <div className="main-container">
+                  <div className="content">
+                    <UserProfilePage currentUser={currentUser} onEditProfile={handleEditProfile} />
+                  </div>
                 </div>
-              </div>
+              </ProtectedRoute>
             }
           />
 
@@ -201,7 +236,6 @@ function App() {
             path="/kuppi/my-sessions"
             element={
               <div className="main-container">
-                <KuppiSidebar />
                 <div className="content">
                   <Dashboard />
                 </div>
@@ -213,11 +247,56 @@ function App() {
             path="/kuppi/browse-sessions"
             element={
               <div className="main-container">
-                <KuppiSidebar />
                 <div className="content">
                   <KuppiSessionsList />
                 </div>
               </div>
+            }
+          />
+
+          <Route
+            path="/resources"
+            element={
+              <ProtectedRoute>
+                <div className="main-container">
+                  <div className="content">
+                    <ResourcePage />
+                  </div>
+                </div>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/user-dashboard"
+            element={
+              <Navigate to="/profile" replace />
+            }
+          />
+
+          <Route
+            path="/admin-dashboard"
+            element={
+              <AdminRoute>
+                <div className="main-container">
+                  <div className="content">
+                    <AdminDashboard />
+                  </div>
+                </div>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/reports"
+            element={
+              <AdminRoute>
+                <div className="main-container">
+                  <div className="content">
+                    <ReportsPage />
+                  </div>
+                </div>
+              </AdminRoute>
             }
           />
 

@@ -1,13 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+import { useCurrentUser } from "../../context/CurrentUserContext";
 
 // RespondModal: Modal for submitting a response to a help request with validation
 // Opens when user clicks "Respond" button on a help request card
 const RespondModal = ({ open, onClose, requestId, onResponded }) => {
+  const { user } = useAuth();
+  const { currentUser } = useCurrentUser();
   const [helperMessage, setHelperMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [messageError, setMessageError] = useState(""); // Field-level error
+
+  const helperIdentity = useMemo(() => {
+    const candidates = [
+      user?.slIIId,
+      currentUser?.itNumber,
+      user?._id,
+      user?.email,
+      localStorage.getItem("userId"),
+    ];
+
+    const found = candidates.find((candidate) => {
+      return candidate !== undefined && candidate !== null && String(candidate).trim() !== "";
+    });
+
+    return found ? String(found).trim() : "";
+  }, [user?.slIIId, user?._id, user?.email, currentUser?.itNumber]);
+
+  useEffect(() => {
+    if (helperIdentity) {
+      localStorage.setItem("userId", helperIdentity);
+    }
+  }, [helperIdentity]);
 
   if (!open) return null;
 
@@ -45,11 +71,16 @@ const RespondModal = ({ open, onClose, requestId, onResponded }) => {
       return;
     }
 
+    if (!helperIdentity) {
+      setError("Unable to identify your account. Please sign in again.");
+      return;
+    }
+
     setLoading(true);
     try {
       // Send POST request to respond to help request
       await axios.post(`http://localhost:5000/api/help/${requestId}/respond`, {
-        helperId: localStorage.getItem("userId") || "helper",
+        helperId: helperIdentity,
         helperMessage: helperMessage,
       });
 

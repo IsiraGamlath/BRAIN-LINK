@@ -24,6 +24,11 @@ router.get('/', controller.getAllHelpRequests);
 // Must be BEFORE /:id route to avoid conflicts
 router.get('/my/:userId', controller.getUserHelpRequests);
 
+// GET /api/help/inbox/:userId
+// Fetch requests where user is requester or assigned helper (notification inbox)
+// Must be BEFORE /:id route to avoid conflicts
+router.get('/inbox/:userId', controller.getUserInboxHelpRequests);
+
 // ==============================
 // CHAT ROUTES (BEFORE :id catch-all)
 // ==============================

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import EditForm from "../components/Peer_Help_Request/EditForm";
+import "./EditRequestPage.css";
 
 // EditRequestPage: Page for editing an existing help request
 const EditRequestPage = () => {
@@ -22,29 +23,33 @@ const EditRequestPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8">
+    <section className="edit-request-page">
+      <div className="edit-request-shell">
+        <header className="edit-request-hero">
           <button
+            type="button"
             onClick={handleCancel}
-            className="text-blue-600 hover:text-blue-700 font-medium mb-4 flex items-center gap-2"
+            className="edit-request-back-btn"
           >
             ← Back to My Requests
           </button>
-          <h1 className="text-4xl font-bold text-gray-900">Edit Help Request</h1>
-          <p className="mt-2 text-lg text-gray-600">Update your request before you get a response</p>
-        </div>
+          <p className="edit-request-kicker">Profile Workspace</p>
+          <h1>Edit Help Request</h1>
+          <p>Update your request before you get a response.</p>
+        </header>
 
         {message && (
-          <div className="mb-6 rounded-lg bg-green-50 border border-green-200 p-4 flex items-start gap-3">
-            <span className="text-xl">✅</span>
-            <p className="font-semibold text-green-900">{message}</p>
+          <div className="edit-request-flash">
+            <span className="edit-request-flash-icon" aria-hidden="true">✓</span>
+            <p>{message}</p>
           </div>
         )}
 
-        <EditForm requestId={id} onSuccess={handleSuccess} onCancel={handleCancel} />
+        <div className="edit-request-form-wrap">
+          <EditForm requestId={id} onSuccess={handleSuccess} onCancel={handleCancel} />
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

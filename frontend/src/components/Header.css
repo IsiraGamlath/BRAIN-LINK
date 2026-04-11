@@ -1,128 +1,176 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Sora:wght@400;600;700&display=swap");
+
 .header {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
-  border-bottom: 1px solid #e0e8f5;
-  padding: 16px 24px;
+  position: relative;
+  isolation: isolate;
+  z-index: 200;
+  background: linear-gradient(150deg, #ffffff 0%, #f6fbff 62%, #fff7ea 100%);
+  border-bottom: 1px solid #d8e6f2;
+  padding: 14px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  gap: 14px;
+  box-shadow: 0 10px 20px rgba(13, 54, 80, 0.06);
+  font-family: "Sora", "Trebuchet MS", sans-serif;
+}
+
+.header::before,
+.header::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.header::before {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  top: -140px;
+  left: -90px;
+  background: radial-gradient(circle at 35% 30%, rgba(61, 142, 184, 0.16), rgba(61, 142, 184, 0));
+}
+
+.header::after {
+  width: 190px;
+  height: 190px;
+  border-radius: 38% 62% 56% 44%;
+  right: -70px;
+  top: -110px;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 210, 139, 0.2), rgba(255, 210, 139, 0));
 }
 
 .global-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 18px;
+  gap: 7px;
+  margin: 0 8px;
+  border: 1px solid #d5e2ee;
+  border-radius: 999px;
+  background: #f4f9fd;
+  padding: 6px;
 }
 
 .global-nav-link {
   text-decoration: none;
-  padding: 8px 14px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 700;
-  color: #334155;
-  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+  color: #35506f;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  white-space: nowrap;
 }
 
 .global-nav-link:hover {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #e8f2f9;
+  color: #214c69;
+  transform: translateY(-1px);
 }
 
 .global-nav-link-active {
-  background: #dbeafe;
-  color: #1d4ed8;
-  box-shadow: inset 0 0 0 1px #bfdbfe;
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 16px rgba(35, 92, 122, 0.22);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  min-width: 0;
 }
 
 .logo {
-  font-size: 22px;
-  font-weight: 900;
-  color: #0f172a;
-  letter-spacing: -0.5px;
+  font-family: "Manrope", sans-serif;
+  font-size: 23px;
+  font-weight: 800;
+  color: #0f223d;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-  letter-spacing: 0.3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #57708f;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-left: 6px;
+  margin-left: 7px;
   padding-left: 6px;
-  border-left: 1px solid #cbd5e1;
+  border-left: 1px solid #d6e3ee;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 14px;
 }
 
 .auth-nav-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .profile-icon-link {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   text-decoration: none;
+  font-family: "Manrope", sans-serif;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.02em;
   color: #ffffff;
-  background: linear-gradient(135deg, #4f46e5, #7c3aed);
-  border: 1px solid rgba(79, 70, 229, 0.8);
-  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
+  border: 1px solid rgba(47, 106, 138, 0.85);
+  box-shadow: 0 8px 16px rgba(35, 92, 122, 0.22);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .profile-icon-link:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 12px 20px rgba(35, 92, 122, 0.28);
 }
 
 .auth-nav-btn {
   text-decoration: none;
-  font-size: 13px;
+  font-family: "Manrope", sans-serif;
+  font-size: 12px;
   font-weight: 700;
-  padding: 8px 14px;
-  border-radius: 8px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid;
+  cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .auth-nav-btn-secondary {
-  color: #1e293b;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  color: #224865;
+  background: #eef6fc;
+  border-color: #c6dbeb;
 }
 
 .auth-nav-btn-secondary:hover {
-  background: #e2e8f0;
+  background: #e4f0f8;
 }
 
 .auth-nav-btn-primary {
   color: #ffffff;
-  background: #4f46e5;
-  border: 1px solid #4f46e5;
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
+  border-color: #2f6a8a;
+  box-shadow: 0 8px 16px rgba(35, 92, 122, 0.2);
 }
 
 .auth-nav-btn-primary:hover {
-  background: #4338ca;
-  border-color: #4338ca;
+  background: linear-gradient(120deg, #275b77 0%, #2d8b84 100%);
+  border-color: #275b77;
 }
 
 .profile-section {
@@ -149,22 +197,19 @@
 }
 
 .notification-icon {
-  font-size: 20px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.notification-icon:hover {
-  transform: scale(1.1);
+  font-size: 18px;
+  line-height: 1;
+  transition: transform 0.25s ease;
 }
 
 .notification-container {
   position: relative;
+  z-index: 240;
 }
 
 .notification-icon-btn {
-  background: transparent;
-  border: none;
+  background: #eef6fc;
+  border: 1px solid #c6dbeb;
   cursor: pointer;
   padding: 0;
   position: relative;
@@ -173,26 +218,35 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  transition: background-color 0.22s ease, transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .notification-icon-btn:hover {
-  background-color: rgba(79, 70, 229, 0.1);
+  background: #e4f0f8;
+  transform: translateY(-1px);
 }
 
 .notification-icon-btn:active {
-  background-color: rgba(79, 70, 229, 0.15);
+  transform: translateY(0);
+}
+
+.notification-icon-btn.is-open {
+  background: linear-gradient(120deg, #2f6a8a 0%, #3aa39b 100%);
+  border-color: #2f6a8a;
+  box-shadow: 0 8px 16px rgba(35, 92, 122, 0.2);
 }
 
 .notification-icon-btn .notification-icon {
-  font-size: 20px;
   margin: 0;
-  transition: transform 0.2s ease;
 }
 
 .notification-icon-btn:hover .notification-icon {
-  transform: scale(1.1);
+  transform: scale(1.08);
+}
+
+.notification-icon-btn.is-open .notification-icon {
+  transform: rotate(-14deg);
 }
 
 .notification-count {
@@ -249,16 +303,17 @@
 
 @media (max-width: 768px) {
   .header {
-    padding: 12px 16px;
+    padding: 12px;
     flex-wrap: wrap;
+    gap: 10px;
   }
 
   .global-nav {
     order: 3;
     width: 100%;
-    margin: 8px 0 0;
+    margin: 4px 0 0;
     overflow-x: auto;
-    padding-bottom: 2px;
+    padding-bottom: 4px;
   }
 
   .subtitle {
@@ -271,12 +326,6 @@
   }
 
   .auth-nav-actions {
-    width: 100%;
     justify-content: flex-end;
-  }
-
-  .edit-profile-btn {
-    padding: 6px 10px;
-    font-size: 11px;
   }
 }

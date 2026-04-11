@@ -1,53 +1,56 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&display=swap");
+
 .status-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 6px 12px;
   border-radius: 999px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.4px;
+  font-size: 0.64rem;
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   border: 1px solid transparent;
 }
 
 .status-badge-small {
-  padding: 4px 9px;
-  font-size: 10px;
+  padding: 4px 8px;
+  font-size: 0.58rem;
 }
 
 .status-badge-open {
-  background: #ecfdf5;
-  color: #166534;
-  border-color: #86efac;
+  background: #ecfaf5;
+  color: #1f6b55;
+  border-color: #a7dbc7;
 }
 
 .status-badge-full {
-  background: #fef2f2;
-  color: #b91c1c;
-  border-color: #fca5a5;
+  background: #fff1f2;
+  color: #8f2f39;
+  border-color: #ecb2b6;
 }
 
 .status-badge-pending {
-  background: #fff7ed;
-  color: #9a3412;
-  border-color: #fdba74;
+  background: #fff8eb;
+  color: #8a5a2d;
+  border-color: #efca9a;
 }
 
 .status-badge-accepted {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border-color: #93c5fd;
+  background: #eaf4fb;
+  color: #2f6a8a;
+  border-color: #bfd5e4;
 }
 
 .status-badge-rejected {
-  background: #f8fafc;
-  color: #475569;
-  border-color: #cbd5e1;
+  background: #f3f6f9;
+  color: #4f657e;
+  border-color: #cedae5;
 }
 
 .status-badge-default {
-  background: #f8fafc;
-  color: #334155;
-  border-color: #cbd5e1;
+  background: #f3f6f9;
+  color: #3f5670;
+  border-color: #cedae5;
 }

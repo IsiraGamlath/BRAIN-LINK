@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
+import { useCurrentUser } from "../../context/CurrentUserContext";
+import "./HelpForm.css";
 
 // HelpForm: Form to create a new help request with validation
 const HelpForm = ({ onSuccess }) => {
+  const { user } = useAuth();
+  const { currentUser } = useCurrentUser();
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [helpType, setHelpType] = useState("chat");
@@ -14,6 +19,28 @@ const HelpForm = ({ onSuccess }) => {
   const [subjectError, setSubjectError] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
   const [helpTypeError, setHelpTypeError] = useState("");
+
+  const requesterId = useMemo(() => {
+    const candidates = [
+      user?.slIIId,
+      currentUser?.itNumber,
+      user?._id,
+      user?.email,
+      localStorage.getItem("userId"),
+    ];
+
+    const match = candidates.find((candidate) => {
+      return candidate !== undefined && candidate !== null && String(candidate).trim() !== "";
+    });
+
+    return match ? String(match).trim() : "";
+  }, [user?.slIIId, user?._id, user?.email, currentUser?.itNumber]);
+
+  useEffect(() => {
+    if (requesterId) {
+      localStorage.setItem("userId", requesterId);
+    }
+  }, [requesterId]);
 
   // Auto-hide success message after 4 seconds
   useEffect(() => {
@@ -106,6 +133,11 @@ const HelpForm = ({ onSuccess }) => {
     setError("");
     setSuccess("");
 
+    if (!requesterId) {
+      setError("Please sign in before submitting a help request.");
+      return;
+    }
+
     // Validate all fields
     if (!validateForm()) {
       return;
@@ -114,6 +146,7 @@ const HelpForm = ({ onSuccess }) => {
     setLoading(true);
     try {
       await axios.post("http://localhost:5000/api/help", {
+        userId: requesterId,
         subject,
         description,
         helpType,
@@ -133,111 +166,88 @@ const HelpForm = ({ onSuccess }) => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg border border-gray-100 p-8 space-y-6"
-    >
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          📝 Post a Help Request
-        </h2>
-        <p className="text-sm text-gray-600 mt-1">Let others help you with your academic challenges</p>
+    <form onSubmit={handleSubmit} className="help-form-card">
+      <div className="help-form-head">
+        <h2>Post a Help Request</h2>
+        <p>Let others help you with your academic challenges.</p>
       </div>
 
       {success && (
-        <div className="rounded-lg bg-green-50 border border-green-200 p-4 flex items-start gap-3">
-          <span className="text-xl">✅</span>
+        <div className="help-form-alert help-form-alert-success">
+          <span className="help-form-alert-icon">OK</span>
           <div>
-            <p className="font-semibold text-green-900">{success}</p>
-            <p className="text-sm text-green-700 mt-1">Your request has been posted to the feed</p>
+            <p>{success}</p>
+            <small>Your request has been posted to the feed.</small>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4 flex items-start gap-3">
-          <span className="text-xl">❌</span>
+        <div className="help-form-alert help-form-alert-error">
+          <span className="help-form-alert-icon">!</span>
           <div>
-            <p className="font-semibold text-red-900">{error}</p>
-            <p className="text-sm text-red-700 mt-1">Please check your inputs and try again</p>
+            <p>{error}</p>
+            <small>Please check your inputs and try again.</small>
           </div>
         </div>
       )}
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-2">
-          📌 Subject
-        </label>
+      <div className="help-form-field">
+        <label className="help-form-label">Subject</label>
         <input
           type="text"
           placeholder="e.g., Help with calculus derivatives"
-          className={`w-full rounded-lg border px-4 py-2.5 transition focus:outline-none ${
-            subjectError
-              ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          }`}
+          className={`help-form-input ${subjectError ? "is-error" : ""}`}
           value={subject}
           onChange={handleSubjectChange}
         />
         {subjectError && (
-          <p className="text-red-600 text-sm font-medium mt-1.5 flex items-center gap-1">
-            <span>❌</span> {subjectError}
+          <p className="help-form-feedback help-form-feedback-error">
+            {subjectError}
           </p>
         )}
         {!subjectError && subject && (
-          <p className="text-green-600 text-sm font-medium mt-1.5 flex items-center gap-1">
-            <span>✓</span> {subject.length} characters
+          <p className="help-form-feedback help-form-feedback-success">
+            {subject.length} characters
           </p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-2">
-          📝 Description
-        </label>
+      <div className="help-form-field">
+        <label className="help-form-label">Description</label>
         <textarea
           placeholder="Describe what you need help with. Be specific so peers can better assist you."
-          className={`w-full rounded-lg border px-4 py-2.5 transition focus:outline-none resize-none ${
-            descriptionError
-              ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          }`}
+          className={`help-form-input help-form-textarea ${descriptionError ? "is-error" : ""}`}
           value={description}
           onChange={handleDescriptionChange}
           rows={4}
         />
         {descriptionError && (
-          <p className="text-red-600 text-sm font-medium mt-1.5 flex items-center gap-1">
-            <span>❌</span> {descriptionError}
+          <p className="help-form-feedback help-form-feedback-error">
+            {descriptionError}
           </p>
         )}
         {!descriptionError && description && (
-          <p className="text-green-600 text-sm font-medium mt-1.5 flex items-center gap-1">
-            <span>✓</span> {description.length} characters (min: 10)
+          <p className="help-form-feedback help-form-feedback-success">
+            {description.length} characters (min: 10)
           </p>
         )}
       </div>
 
-      <div>
-        <label className="block text-sm font-semibold text-gray-900 mb-2">
-          💬 Help Type
-        </label>
+      <div className="help-form-field">
+        <label className="help-form-label">Help Type</label>
         <select
-          className={`w-full rounded-lg border px-4 py-2.5 transition focus:outline-none cursor-pointer ${
-            helpTypeError
-              ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-              : "border-gray-300 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-          }`}
+          className={`help-form-input help-form-select ${helpTypeError ? "is-error" : ""}`}
           value={helpType}
           onChange={handleHelpTypeChange}
         >
           <option value="">-- Select Help Type --</option>
-          <option value="chat">💬 Chat Support</option>
-          <option value="session">📅 Study Session</option>
+          <option value="chat">Chat Support</option>
+          <option value="session">Study Session</option>
         </select>
         {helpTypeError && (
-          <p className="text-red-600 text-sm font-medium mt-1.5 flex items-center gap-1">
-            <span>❌</span> {helpTypeError}
+          <p className="help-form-feedback help-form-feedback-error">
+            {helpTypeError}
           </p>
         )}
       </div>
@@ -245,17 +255,15 @@ const HelpForm = ({ onSuccess }) => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-3 font-semibold text-white transition-all hover:shadow-lg hover:from-blue-700 hover:to-blue-800 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="help-form-submit"
       >
         {loading ? (
           <>
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            <span className="help-form-spinner" />
             Submitting...
           </>
         ) : (
-          <>
-            🚀 Submit Request
-          </>
+          <>Submit Request</>
         )}
       </button>
     </form>
