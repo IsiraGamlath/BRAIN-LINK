@@ -1,75 +1,168 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import './ReportsPage.css';
 
+const API_BASE_URL = 'http://localhost:5000/api/reports';
+
 const STATUSES = ['', 'Pending', 'Reviewed', 'Resolved'];
-const TYPES    = ['', 'group', 'request', 'user'];
+const TYPES = ['', 'group', 'request', 'user', 'resource'];
 
 const ReportsPage = () => {
-  const [reports, setReports]       = useState([]);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState('');
-  const [toast, setToast]           = useState({ msg: '', ok: true });
+  const location = useLocation();
+  const user = JSON.parse(localStorage.getItem('user'));
+  const token = localStorage.getItem('token');
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [toast, setToast] = useState({ msg: '', ok: true });
   const [filterStatus, setFilterStatus] = useState('');
-  const [filterType,   setFilterType]   = useState('');
-  const [showForm, setShowForm]     = useState(false);
+  const [filterType, setFilterType] = useState('');
+  const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ type: 'group', referenceId: '', reason: '' });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (location.state && user?.role === 'student') {
+      setShowForm(true);
+      setForm(prev => ({
+        ...prev,
+        type: location.state.type,
+        referenceId: location.state.referenceId
+      }));
+    }
+  }, [location.state, user]);
 
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
     setTimeout(() => setToast({ msg: '', ok: true }), 3000);
   };
 
-  const loadReports = () => {
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  });
+
+  const loadReports = async () => {
     setLoading(true);
     setError('');
-    setReports([
-      { _id: 'rep1', type: 'group', reportedBy: { fullName: 'Alice Silva' }, reason: 'Inappropriate behavior in group', status: 'Pending', createdAt: new Date().toISOString() },
-      { _id: 'rep2', type: 'request', reportedBy: { fullName: 'Bob Perera' }, reason: 'Spam request posted', status: 'Reviewed', createdAt: new Date(Date.now() - 86400000).toISOString() }
-    ]);
-    setLoading(false);
+    try {
+      const response = await fetch(API_BASE_URL, {
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to load reports: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setReports(data);
+    } catch (err) {
+      setError(err.message);
+      showToast('Failed to load reports', false);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  useEffect(() => { loadReports(); }, []); // eslint-disable-line
+  useEffect(() => {
+    if (token) {
+      loadReports();
+    }
+  }, [token]);
 
   const validateForm = () => {
     const errs = {};
-    if (!form.type)                           errs.type        = 'Type is required';
-    if (!form.referenceId.trim())             errs.referenceId = 'Reference ID is required';
-    if (form.reason.trim().length < 10)       errs.reason      = 'Reason must be at least 10 characters';
+    if (!form.type) errs.type = 'Type is required';
+    if (!form.referenceId.trim()) errs.referenceId = 'Reference ID is required';
+    if (form.reason.trim().length < 10) errs.reason = 'Reason must be at least 10 characters';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setReports(prev => ([
-      ...prev,
-      { _id: `rep-${Date.now()}`, type: form.type, reportedBy: { fullName: 'Current User' }, reason: form.reason, status: 'Pending', createdAt: new Date().toISOString() }
-    ]));
-    showToast('Report submitted successfully ✓');
-    setShowForm(false);
-    setForm({ type: 'group', referenceId: '', reason: '' });
-    setFormErrors({});
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('type', form.type);
+      formData.append('referenceId', form.referenceId);
+      formData.append('reason', form.reason);
+      if (selectedFile) {
+        formData.append('file', selectedFile);
+      }
+
+      const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit report');
+      }
+
+      showToast('Report submitted successfully ✓');
+      setShowForm(false);
+      setForm({ type: 'group', referenceId: '', reason: '' });
+      setSelectedFile(null);
+      setFormErrors({});
+      loadReports(); // Reload reports
+    } catch (err) {
+      showToast(err.message, false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleStatusChange = (id, status) => {
-    setReports(prev => prev.map(r => r._id === id ? { ...r, status } : r));
-    showToast(`Status updated to "${status}"`);
+  const handleStatusChange = async (id, status) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update status');
+      }
+
+      showToast(`Status updated to "${status}"`);
+      loadReports(); // Reload reports
+    } catch (err) {
+      showToast(err.message, false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setReports(prev => prev.filter(r => r._id !== id));
-    showToast('Report deleted successfully');
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this report?')) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete report');
+      }
+
+      showToast('Report deleted successfully');
+      loadReports(); // Reload reports
+    } catch (err) {
+      showToast(err.message, false);
+    }
   };
 
   const filteredReports = reports.filter(r => {
     const matchStatus = !filterStatus || filterStatus === '' || r.status === filterStatus;
-    const matchType   = !filterType   || filterType   === '' || r.type === filterType;
+    const matchType = !filterType || filterType === '' || r.type === filterType;
     return matchStatus && matchType;
   });
 
@@ -96,17 +189,21 @@ const ReportsPage = () => {
             </div>
           </div>
           <div className="rp-header__actions">
-            <Link to="/admin-dashboard" className="rp-admin-link">Admin Panel</Link>
-            <button id="rp-new-report-btn" className="rp-btn rp-btn--primary" onClick={() => setShowForm(!showForm)}>
-              {showForm ? 'Cancel' : '+ New Report'}
-            </button>
+            {user?.role === 'admin' && (
+              <Link to="/admin-dashboard" className="rp-admin-link">Admin Panel</Link>
+            )}
+            {user?.role === 'student' && (
+              <button id="rp-new-report-btn" className="rp-btn rp-btn--primary" onClick={() => setShowForm(!showForm)}>
+                {showForm ? 'Cancel' : '+ New Report'}
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <div className="rp-container">
         {/* New Report Form */}
-        {showForm && (
+        {showForm && user?.role === "student" && (
           <div className="rp-form-card">
             <h3 className="rp-form-title">Submit a Report</h3>
             <form onSubmit={handleSubmit} className="rp-form" noValidate>
@@ -122,6 +219,7 @@ const ReportsPage = () => {
                     <option value="group">Study Group</option>
                     <option value="request">Help Request</option>
                     <option value="user">User</option>
+                    <option value="resource">Resource</option>
                   </select>
                   {formErrors.type && <span className="rp-field-error">{formErrors.type}</span>}
                 </div>
@@ -149,6 +247,17 @@ const ReportsPage = () => {
                 />
                 {formErrors.reason && <span className="rp-field-error">{formErrors.reason}</span>}
               </div>
+              <div className="rp-form-group">
+                <label htmlFor="rp-file">Attach Image (optional)</label>
+                <input
+                  id="rp-file"
+                  type="file"
+                  accept="image/*"
+                  className="rp-input"
+                  onChange={e => setSelectedFile(e.target.files[0])}
+                />
+                <small>Max file size: 5MB. Only image files allowed.</small>
+              </div>
               <div className="rp-form-footer">
                 <button type="button" className="rp-btn rp-btn--ghost" onClick={() => setShowForm(false)}>Cancel</button>
                 <button id="rp-submit-btn" type="submit" className="rp-btn rp-btn--primary" disabled={submitting}>
@@ -160,38 +269,40 @@ const ReportsPage = () => {
         )}
 
         {/* Filters */}
-        <div className="rp-filters">
-          <div className="rp-filter-group">
-            <label>Status</label>
-            <div className="rp-filter-pills">
-              {STATUSES.map(s => (
-                <button
-                  key={s || 'all'}
-                  id={`rp-filter-status-${s || 'all'}`}
-                  className={`rp-pill ${filterStatus === s ? 'rp-pill--active' : ''}`}
-                  onClick={() => setFilterStatus(s)}
-                >
-                  {s || 'All'}
-                </button>
-              ))}
+        {user?.role === 'admin' && (
+          <div className="rp-filters">
+            <div className="rp-filter-group">
+              <label>Status</label>
+              <div className="rp-filter-pills">
+                {STATUSES.map(s => (
+                  <button
+                    key={s || 'all'}
+                    id={`rp-filter-status-${s || 'all'}`}
+                    className={`rp-pill ${filterStatus === s ? 'rp-pill--active' : ''}`}
+                    onClick={() => setFilterStatus(s)}
+                  >
+                    {s || 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="rp-filter-group">
+              <label>Type</label>
+              <div className="rp-filter-pills">
+                {TYPES.map(t => (
+                  <button
+                    key={t || 'all'}
+                    id={`rp-filter-type-${t || 'all'}`}
+                    className={`rp-pill ${filterType === t ? 'rp-pill--active' : ''}`}
+                    onClick={() => setFilterType(t)}
+                  >
+                    {t || 'All'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-          <div className="rp-filter-group">
-            <label>Type</label>
-            <div className="rp-filter-pills">
-              {TYPES.map(t => (
-                <button
-                  key={t || 'all'}
-                  id={`rp-filter-type-${t || 'all'}`}
-                  className={`rp-pill ${filterType === t ? 'rp-pill--active' : ''}`}
-                  onClick={() => setFilterType(t)}
-                >
-                  {t || 'All'}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        )}
 
         {error && <div className="rp-error">{error}</div>}
         {loading && (
@@ -208,7 +319,7 @@ const ReportsPage = () => {
           </div>
         )}
 
-        {!loading && reports.length > 0 && (
+        {!loading && reports.length > 0 && user?.role === 'admin' && (
           <div className="rp-table-wrap">
             <table className="rp-table">
               <thead>
@@ -216,6 +327,7 @@ const ReportsPage = () => {
                   <th>Type</th>
                   <th>Reported By</th>
                   <th>Reason</th>
+                  <th>Attachment</th>
                   <th>Status</th>
                   <th>Date</th>
                   <th>Actions</th>
@@ -226,16 +338,29 @@ const ReportsPage = () => {
                   <tr key={r._id}>
                     <td>
                       <span className={`rp-badge rp-badge--type-${r.type}`}>
-                        {r.type === 'group' ? '👥' : r.type === 'request' ? '❓' : '👤'} {r.type}
+                        {r.type === 'group' ? '👥' : r.type === 'request' ? '❓' : r.type === 'user' ? '👤' : '📄'} {r.type}
                       </span>
                     </td>
                     <td>
                       <div className="rp-reporter">
-                        <span className="rp-avatar">{r.reportedBy?.fullName?.[0] || '?'}</span>
-                        <span>{r.reportedBy?.fullName || 'Anonymous'}</span>
+                        <span className="rp-avatar">?</span>
+                        <span>User ID: {r.reportedBy}</span>
                       </div>
                     </td>
                     <td className="rp-reason">{r.reason}</td>
+                    <td>
+                      {r.file ? (
+                        <img
+                          src={`http://localhost:5000/${r.file}`}
+                          alt="Report attachment"
+                          style={{ maxWidth: '80px', maxHeight: '80px', cursor: 'pointer', borderRadius: '4px' }}
+                          onClick={() => window.open(`http://localhost:5000/${r.file}`, '_blank')}
+                          title="Click to view full size"
+                        />
+                      ) : (
+                        <span style={{ color: '#999' }}>No attachment</span>
+                      )}
+                    </td>
                     <td>
                       <select
                         id={`rp-status-${r._id}`}
@@ -263,6 +388,15 @@ const ReportsPage = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Student view message */}
+        {!loading && user?.role === 'student' && reports.length > 0 && (
+          <div style={{ textAlign: 'center', padding: '32px', color: '#666' }}>
+            <p style={{ fontSize: '14px', margin: 0 }}>
+              ℹ️ Reports are managed by administrators. You can submit a report using the form above.
+            </p>
           </div>
         )}
       </div>

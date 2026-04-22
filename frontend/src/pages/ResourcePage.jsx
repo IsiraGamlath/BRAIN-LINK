@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './ResourcePage.css';
 
 const FILE_TYPES     = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'video', 'image', 'link', 'other'];
@@ -71,7 +71,20 @@ const MOCK_RESOURCES = [
 ];
 
 const ResourcePage = () => {
+
+  const navigate = useNavigate();
+
   const [resources, setResources]     = useState([]);
+
+  const handleReport = (resourceId) => {
+    navigate('/create-report', {
+      state: {
+        type: 'resource',
+        referenceId: resourceId
+      }
+    });
+  };
+
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState('');
   const [toast, setToast]             = useState({ msg:'', ok:true });
@@ -359,6 +372,7 @@ const ResourcePage = () => {
                   <button id={`res-comment-${r._id}`} className="res-action-btn res-action--comment" onClick={()=>setCommentTarget(commentTarget===r._id?null:r._id)} title="Comment">💬</button>
                   <button id={`res-edit-${r._id}`} className="res-action-btn res-action--edit" onClick={()=>openEdit(r)} title="Edit">✏️</button>
                   <button id={`res-del-${r._id}`} className="res-action-btn res-action--delete" onClick={()=>handleDelete(r._id)} title="Delete">🗑</button>
+                  <button className="res-action-btn"style={{background:'rgba(220,38,38,.08)', color:'#DC2626'}}onClick={() => handleReport(r._id)}>🚨 Report</button>
                 </div>
 
                 {/* Star Rating Inline */}

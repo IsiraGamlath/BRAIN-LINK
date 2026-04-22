@@ -16,6 +16,11 @@ const detectPriority = (reason = '') => {
 
 // ─── POST /api/reports ───────────────────────────────────────────────────────
 const createReport = asyncHandler(async (req, res) => {
+  // Only students can create reports
+  if (req.user.role !== 'student') {
+    return res.status(403).json({ message: 'Access denied – only students can create reports' });
+  }
+
   const { type, referenceId, reason, category } = req.body;
 
   if (!type || !referenceId || !reason) {
@@ -40,6 +45,7 @@ const createReport = asyncHandler(async (req, res) => {
     category: category || 'other',
     priority: autoPriority,
     reportedBy: req.user._id,
+    image: req.file ? req.file.path.replace(/\\/g, '/') : null,
     auditHistory: [{ action: 'CREATED', performedBy: req.user._id, note: 'Report submitted' }]
   });
 

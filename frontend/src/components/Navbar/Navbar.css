@@ -70,6 +70,30 @@
 }
 .navbar__logout-btn:active { transform: translateY(0); box-shadow: none; }
 
+/* ── Report button — glass pill with orange/amber accent ── */
+.navbar__report-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.83rem; font-weight: 600;
+  color: #D97706; /* Amber-600 */
+  background: rgba(217, 119, 6, 0.07);
+  border: 1.5px solid rgba(217, 119, 6, 0.28);
+  padding: 8px 20px; border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+}
+.navbar__report-btn:hover {
+  background: rgba(217, 119, 6, 0.13);
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217,119,6,0.10), 0 4px 20px rgba(217,119,6,0.22);
+  transform: translateY(-2px);
+  color: #B45309; /* Amber-700 */
+}
+.navbar__report-btn:active { transform: translateY(0); box-shadow: none; }
+
 /* Mobile variant */
 .navbar__logout-btn--mobile {
   width: 100%; justify-content: center;

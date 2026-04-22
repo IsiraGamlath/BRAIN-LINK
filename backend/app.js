@@ -37,6 +37,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set('trust proxy', 1);
 
+// Serve static files
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.get('/', (req, res) =>
   res.status(200).json({ message: 'BRAIN LINK API is running 🚀' })

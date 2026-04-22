@@ -11,6 +11,7 @@ import { ToastProvider } from './components/Toast/Toast';
 import {
   ProtectedRoute,
   AdminRoute,
+  StudentRoute,
   GuestRoute
 } from './components/ProtectedRoute/ProtectedRoute';
 
@@ -32,10 +33,11 @@ import ForgotPassword  from './pages/ForgotPassword';
 import ResetPassword   from './pages/ResetPassword';
 
 // ── Protected Pages ───────────────────────────────────────────────────────────
-import AdminDashboard  from './pages/AdminDashboard';
-import ReportsPage     from './pages/ReportsPage';
-import UserDashboard   from './pages/UserDashboard';
-import ResourcePage    from './pages/ResourcePage';
+import AdminDashboard     from './pages/AdminDashboard';
+import UserDashboard     from './pages/UserDashboard';
+import ResourcePage      from './pages/ResourcePage';
+import CreateReportPage  from './pages/CreateReportPage';
+import ReportManagementPage from './pages/ReportManagementPage';
 
 // ── Home page (unchanged) ─────────────────────────────────────────────────────
 function Home({ darkMode, toggleDark }) {
@@ -93,10 +95,12 @@ function App() {
             <Route path="/user-dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
             <Route path="/dashboard"      element={<Navigate to="/user-dashboard" replace />} />
             <Route path="/resources"      element={<ProtectedRoute><ResourcePage /></ProtectedRoute>} />
+            <Route path="/create-report"  element={<StudentRoute><CreateReportPage /></StudentRoute>} />
 
             {/* ── Admin-only pages ── */}
             <Route path="/admin-dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/reports"         element={<AdminRoute><ReportsPage /></AdminRoute>} />
+            <Route path="/admin/reports"   element={<AdminRoute><ReportManagementPage /></AdminRoute>} />
+            <Route path="/reports"         element={<Navigate to="/dashboard" replace />} />
 
             {/* ── 404 fallback ── */}
             <Route path="*" element={

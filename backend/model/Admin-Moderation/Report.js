@@ -62,7 +62,8 @@ const ReportSchema = new mongoose.Schema({
     default: null
   },
 
-  auditHistory: [AuditEntrySchema]
+  auditHistory: [AuditEntrySchema],
+  image: { type: String, default: null }
 
 }, { timestamps: true });
 

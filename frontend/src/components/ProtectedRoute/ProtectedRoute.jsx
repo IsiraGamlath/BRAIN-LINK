@@ -54,6 +54,20 @@ export const AdminRoute = ({ children }) => {
   return children;
 };
 
+// ── StudentRoute: requires student role ─────────────────────────────────────────
+export const StudentRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  const location           = useLocation();
+
+  if (loading) return <LoadingSpinner />;
+  if (!user)   return <Navigate to="/login" state={{ from: location }} replace />;
+  
+  // Check if role is student (adjusting for potential variations in role string)
+  if (user.role !== 'student') return <Unauthorized />;
+  
+  return children;
+};
+
 // ── GuestRoute: redirect logged-in users to dashboard ────────────────────────
 export const GuestRoute = ({ children }) => {
   const { user, loading, isAdmin } = useAuth();
