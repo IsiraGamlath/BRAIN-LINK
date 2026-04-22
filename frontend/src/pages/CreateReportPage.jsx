@@ -1,18 +1,53 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './CreateReportPage.css';
 
+const API_BASE = 'http://localhost:5000';
 
 const CreateReportPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const token = localStorage.getItem('token');
-  const [form, setForm] = useState({ type: 'group', referenceId: '', reason: '' });
-  const [selectedFile, setSelectedFile] = useState(null);
+  
+  // Extract query params
+  const queryType = searchParams.get('type');
+  const queryId = searchParams.get('id');
+  const queryTitle = searchParams.get('title');
+
+  const [form, setForm] = useState({ 
+    type: queryType || 'group', 
+    referenceId: queryId || '', 
+    reason: '' 
+  });
+  
+  const [resources, setResources] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState({ msg: '', ok: true });
 
   const TYPES = ['group', 'request', 'user', 'resource'];
+
+  useEffect(() => {
+    // Only fetch if we don't have query params
+    if (!queryId) {
+      const fetchData = async () => {
+        try {
+          const headers = { 'Authorization': `Bearer ${token}` };
+          
+          const resResources = await fetch(`${API_BASE}/api/resources/names/all`, { headers });
+          if (resResources.ok) setResources(await resResources.json());
+          
+          const resGroups = await fetch(`${API_BASE}/api/groups/names/all`, { headers });
+          if (resGroups.ok) setGroups(await resGroups.json());
+        } catch (err) {
+          console.error('Error fetching dropdown data:', err);
+        }
+      };
+      if (token) fetchData();
+    }
+  }, [token, queryId]);
 
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
@@ -22,7 +57,7 @@ const CreateReportPage = () => {
   const validateForm = () => {
     const errs = {};
     if (!form.type) errs.type = 'Type is required';
-    if (!form.referenceId.trim()) errs.referenceId = 'Reference ID is required';
+    if (!form.referenceId) errs.referenceId = 'Selection is required';
     if (form.reason.trim().length < 10) errs.reason = 'Reason must be at least 10 characters';
     setFormErrors(errs);
     return Object.keys(errs).length === 0;
@@ -38,11 +73,12 @@ const CreateReportPage = () => {
       formData.append('type', form.type);
       formData.append('referenceId', form.referenceId);
       formData.append('reason', form.reason);
-      if (selectedFile) {
-        formData.append('image', selectedFile);
+      
+      if (selectedImage) {
+        formData.append('image', selectedImage);
       }
 
-      const response = await fetch('/api/reports', {
+      const response = await fetch(`${API_BASE}/api/reports`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -50,20 +86,89 @@ const CreateReportPage = () => {
         body: formData
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit report');
+        throw new Error(responseData.message || 'Failed to submit report');
       }
 
-      showToast('✓ Report submitted successfully!');
-      setTimeout(() => {
-        navigate('/user-dashboard');
-      }, 2000);
+      alert('Report submitted successfully');
+      setForm({ type: queryType || 'group', referenceId: queryId || '', reason: '' });
+      setSelectedImage(null);
+      
+      navigate('/user-dashboard');
     } catch (err) {
       showToast(err.message, false);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const renderReferenceSelector = () => {
+    // If we have query params, just show the title
+    if (queryId) {
+      return (
+        <div className="crp-info-box">
+          <label>Reporting {form.type.charAt(0).toUpperCase() + form.type.slice(1)}:</label>
+          <p className="crp-target-title">{queryTitle || queryId}</p>
+        </div>
+      );
+    }
+
+    if (form.type === 'resource') {
+      return (
+        <div className="crp-form-group">
+          <label htmlFor="crp-refId">Select Resource *</label>
+          <select
+            id="crp-refId"
+            className={`crp-select ${formErrors.referenceId ? 'crp-input--error' : ''}`}
+            value={form.referenceId}
+            onChange={e => setForm({...form, referenceId: e.target.value})}
+          >
+            <option value="">-- Select Resource --</option>
+            {resources.map(r => (
+              <option key={r._id} value={r._id}>{r.name}</option>
+            ))}
+          </select>
+          {formErrors.referenceId && <span className="crp-field-error">{formErrors.referenceId}</span>}
+        </div>
+      );
+    }
+
+    if (form.type === 'group') {
+      return (
+        <div className="crp-form-group">
+          <label htmlFor="crp-refId">Select Group *</label>
+          <select
+            id="crp-refId"
+            className={`crp-select ${formErrors.referenceId ? 'crp-input--error' : ''}`}
+            value={form.referenceId}
+            onChange={e => setForm({...form, referenceId: e.target.value})}
+          >
+            <option value="">-- Select Group --</option>
+            {groups.map(g => (
+              <option key={g._id} value={g._id}>{g.name}</option>
+            ))}
+          </select>
+          {formErrors.referenceId && <span className="crp-field-error">{formErrors.referenceId}</span>}
+        </div>
+      );
+    }
+
+    return (
+      <div className="crp-form-group">
+        <label htmlFor="crp-refId">Reference ID *</label>
+        <input
+          id="crp-refId"
+          type="text"
+          placeholder="ID of reported item"
+          className={`crp-input ${formErrors.referenceId ? 'crp-input--error' : ''}`}
+          value={form.referenceId}
+          onChange={e => setForm({...form, referenceId: e.target.value})}
+        />
+        {formErrors.referenceId && <span className="crp-field-error">{formErrors.referenceId}</span>}
+      </div>
+    );
   };
 
   return (
@@ -96,35 +201,26 @@ const CreateReportPage = () => {
         <div className="crp-form-card">
           <form onSubmit={handleSubmit} className="crp-form" noValidate>
             <div className="crp-form-row">
-              <div className="crp-form-group">
-                <label htmlFor="crp-type">Report Type *</label>
-                <select
-                  id="crp-type"
-                  className={`crp-select ${formErrors.type ? 'crp-input--error' : ''}`}
-                  value={form.type}
-                  onChange={e => setForm({...form, type: e.target.value})}
-                >
-                  {TYPES.map(t => (
-                    <option key={t} value={t}>
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.type && <span className="crp-field-error">{formErrors.type}</span>}
-              </div>
+              {!queryId && (
+                <div className="crp-form-group">
+                  <label htmlFor="crp-type">Report Type *</label>
+                  <select
+                    id="crp-type"
+                    className={`crp-select ${formErrors.type ? 'crp-input--error' : ''}`}
+                    value={form.type}
+                    onChange={e => setForm({...form, type: e.target.value, referenceId: ''})}
+                  >
+                    {TYPES.map(t => (
+                      <option key={t} value={t}>
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                  {formErrors.type && <span className="crp-field-error">{formErrors.type}</span>}
+                </div>
+              )}
 
-              <div className="crp-form-group">
-                <label htmlFor="crp-refId">Reference ID *</label>
-                <input
-                  id="crp-refId"
-                  type="text"
-                  placeholder="MongoDB ObjectId of reported item"
-                  className={`crp-input ${formErrors.referenceId ? 'crp-input--error' : ''}`}
-                  value={form.referenceId}
-                  onChange={e => setForm({...form, referenceId: e.target.value})}
-                />
-                {formErrors.referenceId && <span className="crp-field-error">{formErrors.referenceId}</span>}
-              </div>
+              {renderReferenceSelector()}
             </div>
 
             <div className="crp-form-group">
@@ -147,14 +243,14 @@ const CreateReportPage = () => {
                 type="file"
                 accept="image/*"
                 className="crp-input"
-                onChange={e => setSelectedFile(e.target.files[0])}
+                onChange={e => setSelectedImage(e.target.files[0])}
               />
-              {selectedFile && <p className="crp-file-info">📎 {selectedFile.name}</p>}
+              {selectedImage && <p className="crp-file-info">📎 {selectedImage.name}</p>}
               <small>Max file size: 5MB. Supported: PNG, JPG, GIF, WebP</small>
             </div>
 
             <div className="crp-form-footer">
-              <button type="button" className="crp-btn crp-btn--ghost" onClick={() => navigate('/user-dashboard')}>
+              <button type="button" className="crp-btn crp-btn--ghost" onClick={() => navigate(-1)}>
                 Cancel
               </button>
               <button type="submit" className="crp-btn crp-btn--primary" disabled={submitting}>

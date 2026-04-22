@@ -191,8 +191,15 @@ const getComments = asyncHandler(async (req, res) => {
   res.json({ success: true, comments: resource.comments || [] });
 });
 
+// ─── GET /api/resources/names/all ───────────────────────────────────────────
+const getResourceNames = asyncHandler(async (req, res) => {
+  const resources = await Resource.find({ isDeleted: false }, '_id title');
+  // Return format as requested: list of objects with _id and name
+  res.json(resources.map(r => ({ _id: r._id, name: r.title })));
+});
+
 module.exports = {
   uploadResource, getResources, getResourceById,
   updateResource, deleteResource, downloadResource,
-  rateResource, addComment, getComments
+  rateResource, addComment, getComments, getResourceNames
 };

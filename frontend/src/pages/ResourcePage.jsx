@@ -76,13 +76,8 @@ const ResourcePage = () => {
 
   const [resources, setResources]     = useState([]);
 
-  const handleReport = (resourceId) => {
-    navigate('/create-report', {
-      state: {
-        type: 'resource',
-        referenceId: resourceId
-      }
-    });
+  const handleReport = (resource) => {
+    navigate(`/create-report?type=resource&id=${resource._id}&title=${encodeURIComponent(resource.title)}`);
   };
 
   const [loading, setLoading]         = useState(false);
@@ -372,7 +367,7 @@ const ResourcePage = () => {
                   <button id={`res-comment-${r._id}`} className="res-action-btn res-action--comment" onClick={()=>setCommentTarget(commentTarget===r._id?null:r._id)} title="Comment">💬</button>
                   <button id={`res-edit-${r._id}`} className="res-action-btn res-action--edit" onClick={()=>openEdit(r)} title="Edit">✏️</button>
                   <button id={`res-del-${r._id}`} className="res-action-btn res-action--delete" onClick={()=>handleDelete(r._id)} title="Delete">🗑</button>
-                  <button className="res-action-btn"style={{background:'rgba(220,38,38,.08)', color:'#DC2626'}}onClick={() => handleReport(r._id)}>🚨 Report</button>
+                  <button className="res-action-btn"style={{background:'rgba(220,38,38,.08)', color:'#DC2626'}}onClick={() => handleReport(r)}>🚨 Report</button>
                 </div>
 
                 {/* Star Rating Inline */}

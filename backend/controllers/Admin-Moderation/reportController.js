@@ -45,7 +45,7 @@ const createReport = asyncHandler(async (req, res) => {
     category: category || 'other',
     priority: autoPriority,
     reportedBy: req.user._id,
-    image: req.file ? req.file.path.replace(/\\/g, '/') : null,
+    image: req.file ? req.file.filename : null,
     auditHistory: [{ action: 'CREATED', performedBy: req.user._id, note: 'Report submitted' }]
   });
 

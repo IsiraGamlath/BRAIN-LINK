@@ -700,6 +700,15 @@ const updateMaxMembers = async (req, res) => {
   }
 };
 
+const getGroupNames = async (req, res) => {
+  try {
+    const groups = await StudyGroup.find({}, '_id groupName');
+    res.status(200).json(groups.map(g => ({ _id: g._id, name: g.groupName })));
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createStudyGroup,
   getRelevantGroups,
@@ -710,4 +719,5 @@ module.exports = {
   leaveGroup,
   deleteGroup,
   updateMaxMembers,
+  getGroupNames,
 };

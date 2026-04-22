@@ -208,7 +208,7 @@ const ReportManagementPage = () => {
                       {r.image ? (
                         <button
                           className="rmp-view-image"
-                          onClick={() => window.open(`/${r.image}`, '_blank')}
+                          onClick={() => window.open(`http://localhost:5000/uploads/${r.image}`, '_blank')}
                           title="Click to view image"
                         >
                           📸 View

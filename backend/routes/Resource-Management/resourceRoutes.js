@@ -10,7 +10,8 @@ const {
   downloadResource,
   rateResource,
   addComment,
-  getComments
+  getComments,
+  getResourceNames
 } = require('../../controllers/Resource-Management/resourceController');
 
 const { protect } = require('../../middleware/auth');
@@ -31,5 +32,8 @@ router.post('/:id/download', downloadResource);
 router.post('/:id/rate',     rateResource);
 router.post('/:id/comments', addComment);
 router.get( '/:id/comments', getComments);
+
+// Dropdown support
+router.get('/names/all', getResourceNames);
 
 module.exports = router;
