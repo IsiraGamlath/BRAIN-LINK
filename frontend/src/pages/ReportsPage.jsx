@@ -134,71 +134,10 @@ const ReportsPage = () => {
               <p className="rp-header__sub">View and manage platform reports</p>
             </div>
           </div>
-          <div className="rp-header__actions">
-            <Link to="/admin-dashboard" className="rp-admin-link">Admin Panel</Link>
-            <button id="rp-new-report-btn" className="rp-btn rp-btn--primary" onClick={() => setShowForm(!showForm)}>
-              {showForm ? 'Cancel' : '+ New Report'}
-            </button>
-          </div>
         </div>
       </header>
 
       <div className="rp-container">
-        {/* New Report Form */}
-        {showForm && (
-          <div className="rp-form-card">
-            <h3 className="rp-form-title">Submit a Report</h3>
-            <form onSubmit={handleSubmit} className="rp-form" noValidate>
-              <div className="rp-form-row">
-                <div className="rp-form-group">
-                  <label htmlFor="rp-type">Report Type *</label>
-                  <select
-                    id="rp-type"
-                    className={`rp-select ${formErrors.type ? 'rp-input--error' : ''}`}
-                    value={form.type}
-                    onChange={e => setForm({...form, type: e.target.value})}
-                  >
-                    <option value="group">Study Group</option>
-                    <option value="request">Help Request</option>
-                    <option value="user">User</option>
-                    <option value="resource">Resource</option>
-                  </select>
-                  {formErrors.type && <span className="rp-field-error">{formErrors.type}</span>}
-                </div>
-                <div className="rp-form-group">
-                  <label htmlFor="rp-refId">Reference ID *</label>
-                  <input
-                    id="rp-refId"
-                    placeholder="MongoDB ObjectId of reported item"
-                    className={`rp-input ${formErrors.referenceId ? 'rp-input--error' : ''}`}
-                    value={form.referenceId}
-                    onChange={e => setForm({...form, referenceId: e.target.value})}
-                  />
-                  {formErrors.referenceId && <span className="rp-field-error">{formErrors.referenceId}</span>}
-                </div>
-              </div>
-              <div className="rp-form-group">
-                <label htmlFor="rp-reason">Reason * <span className="rp-char-count">({form.reason.length}/min 10)</span></label>
-                <textarea
-                  id="rp-reason"
-                  rows={4}
-                  placeholder="Describe the issue in detail (minimum 10 characters)..."
-                  className={`rp-textarea ${formErrors.reason ? 'rp-input--error' : ''}`}
-                  value={form.reason}
-                  onChange={e => setForm({...form, reason: e.target.value})}
-                />
-                {formErrors.reason && <span className="rp-field-error">{formErrors.reason}</span>}
-              </div>
-              <div className="rp-form-footer">
-                <button type="button" className="rp-btn rp-btn--ghost" onClick={() => setShowForm(false)}>Cancel</button>
-                <button id="rp-submit-btn" type="submit" className="rp-btn rp-btn--primary" disabled={submitting}>
-                  {submitting ? 'Submitting...' : 'Submit Report'}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
         {/* Filters */}
         <div className="rp-filters">
           <div className="rp-filter-group">

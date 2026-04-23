@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   apiAddComment,
+  apiCreateReport,
   apiCreateResource,
   apiDeleteResource,
   apiDownloadResource,
@@ -34,6 +35,12 @@ const ResourcePage = () => {
   const [commentTarget, setCommentTarget] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [hoverStar, setHoverStar] = useState(0);
+  // New state for reporting a resource
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportErrors, setReportErrors] = useState({});
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
@@ -89,6 +96,44 @@ const ResourcePage = () => {
     setForm({ title:r.title, description:r.description, fileUrl:r.fileUrl, fileType:r.fileType, subject:r.subject, topic:r.topic||'', tags:(r.tags||[]).join(', '), resourceType:r.resourceType, visibility:r.visibility });
     setFormErrors({});
     setShowModal(true);
+  };
+
+  // New function to open report modal for a resource
+  const openReport = (r) => {
+    setReportTarget(r);
+    setReportReason('');
+    setReportErrors({});
+    setShowReportModal(true);
+  };
+
+  const validateReport = () => {
+    const errs = {};
+    if (!reportReason.trim() || reportReason.trim().length < 10) {
+      errs.reason = 'Reason must be at least 10 characters';
+    }
+    setReportErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateReport()) return;
+    setReportSubmitting(true);
+    try {
+      await apiCreateReport({
+        type: 'resource',
+        referenceId: reportTarget._id,
+        reason: reportReason.trim()
+      });
+      showToast('Report submitted ✓');
+      setShowReportModal(false);
+      setReportTarget(null);
+      setReportReason('');
+    } catch (err) {
+      showToast(err.message || 'Failed to submit report', false);
+    } finally {
+      setReportSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -266,6 +311,7 @@ const ResourcePage = () => {
                   <button id={`res-comment-${r._id}`} className="res-action-btn res-action--comment" onClick={()=>setCommentTarget(commentTarget===r._id?null:r._id)} title="Comment">💬</button>
                   <button id={`res-edit-${r._id}`} className="res-action-btn res-action--edit" onClick={()=>openEdit(r)} title="Edit">✏️</button>
                   <button id={`res-del-${r._id}`} className="res-action-btn res-action--delete" onClick={()=>handleDelete(r._id)} title="Delete">🗑</button>
+                  <button id={`res-report-${r._id}`} className="res-action-btn res-action--report" onClick={()=>openReport(r)} title="Report Resource">🚩</button>
                 </div>
 
                 {/* Star Rating Inline */}
@@ -381,6 +427,45 @@ const ResourcePage = () => {
           </div>
         </div>
       )}
+{/* Report Resource Modal */}
+{showReportModal && (
+  <div className="rp-modal-overlay" onClick={e=>{if(e.target===e.currentTarget)setShowReportModal(false)}}>
+    <div className="rp-modal">
+      <div className="rp-modal__header">
+        <h2>Report Resource</h2>
+        <button className="rp-modal__close" onClick={()=>setShowReportModal(false)}>✕</button>
+      </div>
+      <form className="rp-modal__form" onSubmit={handleReportSubmit} noValidate>
+        <div className="rp-modal__group">
+          <label htmlFor="rp-report-type">Report Type *</label>
+          <input id="rp-report-type" className="rp-modal__input" value="resource" readOnly />
+        </div>
+        <div className="rp-modal__group">
+          <label htmlFor="rp-report-ref">Reference ID *</label>
+          <input id="rp-report-ref" className="rp-modal__input" value={reportTarget ? reportTarget._id : ''} readOnly />
+        </div>
+        <div className="rp-modal__group">
+          <label htmlFor="rp-report-reason">Reason *
+            <span className="rp-char-count">({reportReason.length}/min 10)</span>
+          </label>
+          <textarea id="rp-report-reason" rows={4}
+            className={`rp-modal__textarea ${reportErrors.reason ? 'rp-modal__input--err' : ''}`}
+            placeholder="Describe the issue (min 10 chars)..."
+            value={reportReason}
+            onChange={e=>setReportReason(e.target.value)}
+          />
+          {reportErrors.reason && <span className="rp-modal__err">{reportErrors.reason}</span>}
+        </div>
+        <div className="rp-modal__footer">
+          <button type="button" className="rp-modal__cancel" onClick={()=>setShowReportModal(false)}>Cancel</button>
+          <button type="submit" className="rp-modal__submit" disabled={reportSubmitting}>
+            {reportSubmitting ? 'Submitting…' : 'Submit Report'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };
